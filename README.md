@@ -267,7 +267,7 @@ TRPGはゲームの仕様上ツールをまたいで管理する時間はそこ�
 
 ### 画面遷移図
 
-Figma：<https://xxxxxxxxxxxx>
+Figma：[画面遷移図](https://www.figma.com/design/k5KcXGMwQVRuSlmCmzRP3C/vitals-roll?node-id=0-1&t=VdfgkcWn5NWvQwV4-1)
 
 ### 本サービスの概要（700文字以内）
 
@@ -295,7 +295,12 @@ CCFOLIAでTRPGを遊ぶプレイヤーは、バフがかかるたびにチャッ
 
 ### 未ログインでも閲覧または利用できるページ
 
-MVP時点ではなし
+- トップページ
+- 新規登録ページ
+- ログインページ
+- 利用規約
+- プライバシーポリシー
+- お問い合わせページ
 
 ### メールアドレス・パスワード変更確認項目
 
