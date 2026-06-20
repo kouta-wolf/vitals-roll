@@ -321,11 +321,71 @@ CCFOLIAでTRPGを遊ぶプレイヤーは、バフがかかるたびにチャッ
 
 ### テーブル詳細
 
-#### Aテーブル（例：users）
+#### usersテーブル
 
-- name : string / ユーザーの表示名
-- email : string / ログイン用メールアドレス（ユニーク制約）
-- ...
+- id : bigint / ユーザーID（主キー）
+- email : string / メールアドレス（Devise）
+- encrypted_password : string / パスワード（Devise）
+- reset_password_token : string / パスワードリセット用トークン（Devise）
+- reset_password_sent_at : datetime / パスワードリセット送信日時（Devise）
+- created_at : datetime / 作成日時
+- updated_at : datetime / 更新日時
+
+#### charactersテーブル
+
+- id : bigint / キャラクターID（主キー）
+- user_id : bigint / 所有ユーザーID（外部キー）
+- name : string / キャラクター名
+- race : string / 種族
+- main_class : string / メイン技能
+- main_class_level : integer / 冒険者レベル
+- dexterity : integer / 器用度
+- agility : integer / 敏捷度
+- strength : integer / 筋力
+- vitality : integer / 生命力
+- intelligence : integer / 知力
+- spirit : integer / 精神力
+- defense : integer / 防護点
+- current_round : integer / 現在のラウンド数（将来的にsessionsテーブルへ移行）
+- created_at : datetime / 作成日時
+- updated_at : datetime / 更新日時
+
+#### weaponsテーブル
+
+- id : bigint / 武器ID（主キー）
+- character_id : bigint / 所有キャラクターID（外部キー）
+- name : string / 武器名
+- power : integer / 威力
+- critical : integer / クリティカル値
+- fixed_value : integer / ダメージ固定値
+- fixed_hit_rate : integer / 命中補正値
+- created_at : datetime / 作成日時
+- updated_at : datetime / 更新日時
+
+#### buff_presetsテーブル
+
+- id : bigint / プリセットID（主キー）
+- name : string / バフ名
+- target_status : string / 対象ステータス
+- bonus_value : integer / 補正値
+- duration_rounds : integer / 持続ラウンド数（nullは無限）
+- special_type : string / 特殊処理
+- created_at : datetime / 作成日時
+- updated_at : datetime / 更新日時
+
+#### buffsテーブル
+
+- id : bigint / バフID（主キー）
+- character_id : bigint / 対象キャラクターID（外部キー）
+- buff_preset_id : bigint / 参照プリセットID（外部キー、nullは個別作成）
+- name : string / バフ名
+- target_status : string / 対象ステータス
+- bonus_value : integer / 補正値
+- duration_rounds : integer / 持続ラウンド数（nullは無限）
+- remaining_rounds : integer / 残りラウンド数
+- active : boolean / 有効スイッチ
+- created_at : datetime / 作成日時
+- updated_at : datetime / 更新日時
 
 ### ER図の注意点
 
