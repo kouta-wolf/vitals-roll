@@ -305,3 +305,102 @@ CCFOLIAでTRPGを遊ぶプレイヤーは、バフがかかるたびにチャッ
 ### メールアドレス・パスワード変更確認項目
 
 - [ ] パスワードリセット機能
+
+### ER図
+
+![ER図](docs/er_diagram.png)
+
+### 本サービスの概要（700文字以内）
+
+vitals-rollはソード・ワールド2.5のオンラインセッション中に発生するバフ管理の手間とミスを解消するWebアプリ。
+
+CCFOLIAではプレイヤーはバフがかかるたびにチャットパレットの判定式を手動で書き直す必要がある。この作業を忘れると誤った数値で判定が進み、後からロールバックするか否かの議論でセッションが止まる。本アプリは判定式を自動化してゲームへの集中を維持することを目的とする。
+
+想定ユーザーは、CCFOLIAを使いSW2.5をプレイする20〜30代の社会人・大学生。特にバフが重なりやすい近接職プレイヤーをメインターゲットとする。
+
+主な機能は、キャラクターのステータス管理・バフ登録・バフのオンオフ切り替え、ラウンド手動進行によるバフ持続ターンの自動減少、バフ反映済み判定式のクリップボードへのコピー。特殊なバフやよく使うバフはプリセットとして提供し、初回から即座に使い始められる。ラウンドが進むとバフ持続ターンが自動減少し、0になると自動的にオフされるため、バフ状態を把握しながらゲームを進められる。
+
+### MVPで実装する予定の機能
+
+- キャラクターのステータス管理（作成・閲覧・編集・削除）
+- バフ登録・オンオフ切り替え・ラウンド進行によるバフ持続ターンの自動管理
+- バフ反映済み判定式のクリップボードコピー
+
+### テーブル詳細
+
+#### usersテーブル
+
+- id : bigint / ユーザーID（主キー）
+- email : string / メールアドレス（Devise）
+- encrypted_password : string / パスワード（Devise）
+- reset_password_token : string / パスワードリセット用トークン（Devise）
+- reset_password_sent_at : datetime / パスワードリセット送信日時（Devise）
+- created_at : datetime / 作成日時
+- updated_at : datetime / 更新日時
+
+#### charactersテーブル
+
+- id : bigint / キャラクターID（主キー）
+- user_id : bigint / 所有ユーザーID（外部キー）
+- name : string / キャラクター名
+- race : string / 種族
+- main_class : string / メイン技能
+- main_class_level : integer / 冒険者レベル
+- dexterity : integer / 器用度
+- agility : integer / 敏捷度
+- strength : integer / 筋力
+- vitality : integer / 生命力
+- intelligence : integer / 知力
+- spirit : integer / 精神力
+- defense : integer / 防護点
+- current_round : integer / 現在のラウンド数（将来的にsessionsテーブルへ移行）
+- created_at : datetime / 作成日時
+- updated_at : datetime / 更新日時
+
+#### weaponsテーブル
+
+- id : bigint / 武器ID（主キー）
+- character_id : bigint / 所有キャラクターID（外部キー）
+- name : string / 武器名
+- power : integer / 威力
+- critical : integer / クリティカル値
+- fixed_value : integer / ダメージ固定値
+- fixed_hit_rate : integer / 命中補正値
+- created_at : datetime / 作成日時
+- updated_at : datetime / 更新日時
+
+#### buff_presetsテーブル
+
+- id : bigint / プリセットID（主キー）
+- name : string / バフ名
+- target_status : string / 対象ステータス
+- bonus_value : integer / 補正値
+- duration_rounds : integer / 持続ラウンド数（nullは無限）
+- special_type : string / 特殊処理
+- created_at : datetime / 作成日時
+- updated_at : datetime / 更新日時
+
+#### buffsテーブル
+
+- id : bigint / バフID（主キー）
+- character_id : bigint / 対象キャラクターID（外部キー）
+- buff_preset_id : bigint / 参照プリセットID（外部キー、nullは個別作成）
+- name : string / バフ名
+- target_status : string / 対象ステータス
+- bonus_value : integer / 補正値
+- duration_rounds : integer / 持続ラウンド数（nullは無限）
+- remaining_rounds : integer / 残りラウンド数
+- active : boolean / 有効スイッチ
+- created_at : datetime / 作成日時
+- updated_at : datetime / 更新日時
+
+### ER図の注意点
+
+- [x] 最新のER図スクリーンショットがPRに掲載されているか
+- [x] テーブル名は複数形になっているか
+- [x] カラムの型は記載されているか
+- [x] 外部キーは適切か
+- [x] リレーションは正しく描かれているか
+- [x] 多対多の関係になっていないか
+- [x] STIを使用していないか
+- [x] postsテーブルに post_name のような命名をしていないか
