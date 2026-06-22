@@ -39,7 +39,7 @@ erDiagram
         integer intelligence "知力"
         integer spirit "精神力"
         integer defense "防護点"
-        integer current_round "現在のラウンド数(将来的にsessionsテーブルへ移行)"
+        integer current_rounds "現在のラウンド数(将来的にsessionsテーブルへ移行)"
         datetime created_at "作成日時"
         datetime updated_at "更新日時"
     }
@@ -91,6 +91,6 @@ erDiagram
 
 - **buff_presetsとbuffsの分離**：buff_presetsはアプリ全体で共有する雛形テーブルでcharacter_idを持たない。buffsはキャラクターに実際にかかっている実体のバフで、プリセットから生成した場合はbuff_preset_idを持ち、手動登録したカスタムバフはnullになる。
 - **weaponsテーブルの分離**：SW2.5は武器2つ持ちの技能があるため将来的に分離できるように今から調整とした。
-- **current_roundの位置**：現在はcharactersテーブルに持たせているが、将来的に複数人セッション機能を追加する際はsessionsテーブル等を設けてそこに移行することを検討。
+- **current_roundsの位置**：現在はcharactersテーブルに持たせているが、将来的に複数人セッション機能を追加する際はsessionsテーブル等を設けてそこに移行することを検討。
 - **special_type**：通常の補正では表現できない特殊な処理（クリティカル値変更・ダイス目固定など）を文字列enumで区別するカラム。判定式の組み立てロジックで参照する。
 - **active**：バフはオン/オフを切り替えて一時的に無効化できる。activeがfalseのバフは判定式の計算から除外される。
