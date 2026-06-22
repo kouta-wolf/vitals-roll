@@ -353,7 +353,7 @@ CCFOLIAではプレイヤーはバフがかかるたびにチャットパレッ�
 - intelligence : integer / 知力
 - spirit : integer / 精神力
 - defense : integer / 防護点
-- current_round : integer / 現在のラウンド数（将来的にsessionsテーブルへ移行）
+- current_rounds : integer / 現在のラウンド数（将来的にsessionsテーブルへ移行）
 - created_at : datetime / 作成日時
 - updated_at : datetime / 更新日時
 
