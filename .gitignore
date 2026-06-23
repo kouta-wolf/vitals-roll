@@ -1,1 +1,5 @@
+# ER仮図面のため
 docs/ER_dev/
+
+# Claude用データのため
+.claude/settings.local.json
