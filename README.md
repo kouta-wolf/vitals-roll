@@ -215,14 +215,14 @@ TRPGはゲームの仕様上ツールをまたいで管理する時間はそこ�
 
 ### 10-1. 使用予定の技術
 
-- プログラミング言語：Ruby 3.4.7
+- プログラミング言語：Ruby 3.4.9
 - フロントエンド：Hotwire (Rails 8.1.3に同梱)
 - バックエンド：Rails 8.1.3
 - DB：PostgreSQL 17.9
 - 環境構築：Docker 29
 - デプロイ：Render
-- CSSフレームワーク：TailwindCSS 4.4.0
-- 認証：Devise 5.0.4
+- CSSフレームワーク：TailwindCSS 4.3.1
+- 認証：Devise 4.9.4
 - ページネーション：kaminari 1.2.2
 - テスト：rspec-rails 8.0.4 + factory_bot_rails 6.5.1
 - モック：faker 3.8.0
