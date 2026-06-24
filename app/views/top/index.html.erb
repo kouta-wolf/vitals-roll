@@ -1,0 +1,41 @@
+<header class="bg-white/80 backdrop-blur-md border-b border-gray-200 p-4 sticky top-0 z-10">
+  <nav class="flex justify-between max-w-6xl mx-auto items-center">
+    <a href="#" class="text-3xl">🎲Vitals Roll</a>
+    <div class="space-x-8">
+      <button class="inline-flex h-12 items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 px-6 font-medium text-white transition active:scale-95 hover:cursor-pointer">新規登録</button>
+      <a href="#" class="hover:text-gray-500">ログイン</a>
+    </div>
+  </nav>
+</header>
+
+<main class="bg-linear-to-br from-blue-100 via-sky-100 to-indigo-100">
+  <section class="py-32 flex flex-col items-center gap-16">
+    <h1 class="my-4 text-slate-800 text-6xl font-bold text-center">
+      Vitals Rollを使って<br>TRPGセッションを<span class="text-blue-600">高速化</span>しよう
+    </h1>
+    <p class="text-center text-gray-400">
+      現在はSW2.5のみ対応しています。<br>順次更新予定
+    </p>
+    <button class="inline-flex h-12  items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 px-24 text-white transition active:scale-95 hover:cursor-pointer">
+      今すぐ始める
+    </button>
+  </section>
+  <section class="py-16  flex flex-col items-center gap-8">
+    <h2 class="text-4xl text-center">
+      画面紹介
+    </h2>
+    <%= image_tag "develop_img.png", alt: "開発中のイメージ画像", class: "m-4 max-w-4xl mx-auto shadow-lg" %>
+    <p class="text-gray-500 ">※現在開発中の画面です</p>
+  </section>
+</main>
+
+<footer class="p-2 bg-slate-900 text-slate-300">
+  <div class="flex flex-row m-4 space-x-4 text-sm">
+    <a href="#" class="hover:text-white">利用規約</a>
+    <a href="#" class="hover:text-white">プライバシーポリシー</a>
+    <a href="#" class="hover:text-white">お問い合わせ</a>
+  </div>
+  <div class="flex justify-center items-center text-gray-400 text-sm">
+    2026 ©Vitals Roll
+  </div>
+</footer>
