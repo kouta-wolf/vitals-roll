@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17
+    image: postgres:17.9
     restart: always
     environment:
       TZ: Asia/Tokyo
