@@ -1,0 +1,46 @@
+name: Discord Notify
+
+on:
+  pull_request:
+    types: [opened, closed, reopened, ready_for_review]
+  issue_comment:
+    types: [created]
+
+jobs:
+  notify:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          EVENT_NAME: ${{ github.event_name }}
+          ACTION: ${{ github.event.action }}
+          ACTOR: ${{ github.actor }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          COMMENT_URL: ${{ github.event.comment.html_url }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            case "$ACTION" in
+              opened)           label="📬 PR Opened" ;;
+              closed)
+                [ "$PR_MERGED" = "true" ] && label="✅ PR Merged" || label="❌ PR Closed"
+                ;;
+              reopened)         label="🔄 PR Reopened" ;;
+              ready_for_review) label="👀 Ready for Review" ;;
+              *)                label="PR: $ACTION" ;;
+            esac
+            message="${label} by \`${ACTOR}\`
+[${PR_TITLE}](${PR_URL})"
+          else
+            short_body="${COMMENT_BODY:0:200}"
+            message="💬 Comment by \`${ACTOR}\` on [${ISSUE_TITLE}](${COMMENT_URL})
+> ${short_body}"
+          fi
+
+          jq -n --arg content "$message" '{"content": $content}' \
+          | curl -sSf -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK_URL"
