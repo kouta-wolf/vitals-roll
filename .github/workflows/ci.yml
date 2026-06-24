@@ -75,6 +75,20 @@ jobs:
         with:
           bundler-cache: true
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: yarn
+
+      - name: Install JS dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build assets (JS / CSS)
+        run: |
+          yarn build
+          yarn build:css
+
       - name: Run RSpec
         env:
           RAILS_ENV: test
