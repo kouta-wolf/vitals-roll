@@ -82,5 +82,5 @@ jobs:
           DB_USERNAME: postgres
           DB_PASSWORD: postgres
         run: |
-          bin/rails db:test:prepare
+          bin/rails db:create db:migrate
           bundle exec rspec
