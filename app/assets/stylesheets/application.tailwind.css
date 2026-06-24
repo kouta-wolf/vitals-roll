@@ -3,3 +3,25 @@
 @theme {
   --font-sans: "Noto Sans JP", sans-serif;
 }
+
+/* 利用規約・プライバシーポリシー等の長文ページ用 */
+@layer components {
+  .legal-doc {
+    @apply text-slate-700 leading-relaxed;
+  }
+  .legal-doc h1 {
+    @apply text-2xl font-bold text-slate-900 mb-4;
+  }
+  .legal-doc h2 {
+    @apply text-lg font-bold text-slate-900 mt-10 mb-3 pb-2 border-b border-slate-200;
+  }
+  .legal-doc p {
+    @apply my-3;
+  }
+  .legal-doc ol {
+    @apply list-decimal ps-6 space-y-2 my-3;
+  }
+  .legal-doc ol ol {
+    @apply list-[lower-alpha] mt-2;
+  }
+}
