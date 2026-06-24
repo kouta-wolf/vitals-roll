@@ -24,6 +24,7 @@ jobs:
           COMMENT_URL: ${{ github.event.comment.html_url }}
           COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
+          NL=$'\n'
           if [ "$EVENT_NAME" = "pull_request" ]; then
             case "$ACTION" in
               opened)           label="📬 PR Opened" ;;
@@ -34,12 +35,10 @@ jobs:
               ready_for_review) label="👀 Ready for Review" ;;
               *)                label="PR: $ACTION" ;;
             esac
-            message="${label} by \`${ACTOR}\`
-[${PR_TITLE}](${PR_URL})"
+            message="${label} by \`${ACTOR}\`${NL}[${PR_TITLE}](${PR_URL})"
           else
             short_body="${COMMENT_BODY:0:200}"
-            message="💬 Comment by \`${ACTOR}\` on [${ISSUE_TITLE}](${COMMENT_URL})
-> ${short_body}"
+            message="💬 Comment by \`${ACTOR}\` on [${ISSUE_TITLE}](${COMMENT_URL})${NL}> ${short_body}"
           fi
 
           jq -n --arg content "$message" '{"content": $content}' \
