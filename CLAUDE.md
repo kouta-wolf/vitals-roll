@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 [kouta-wolf/vitals-roll](https://github.com/kouta-wolf/vitals-roll)
 
-Issue は `#番号` で参照できる（例: #55）。
+Issue は `#番号` で参照できる（例: #55）。ユーザーが `#番号` でIssueに言及した場合は `docs/issues.json` を読んで内容を確認すること。Issue一覧は `gh issue list` で随時最新化できる。
 
 ## 開発環境の起動
 
@@ -35,9 +35,9 @@ bin/rails db:migrate
 bin/rails db:seed
 
 # テスト
-bin/rails test                          # 全テスト
-bin/rails test test/models/user_test.rb # 単一ファイル
-bin/rails test:system                   # システムテスト（Capybara + Selenium）
+bundle exec rspec                       # 全テスト
+bundle exec rspec spec/models/          # ディレクトリ指定
+bundle exec rspec spec/requests/user_spec.rb # 単一ファイル
 
 # Lint / セキュリティ
 bin/rubocop                # コードスタイル検査
@@ -54,7 +54,7 @@ bin/bundler-audit          # Gemの既知脆弱性チェック
 - **フロントエンド**: Hotwire（Turbo + Stimulus）、esbuild（JSバンドル）、TailwindCSS 4.3.1
 - **DB**: PostgreSQL 17.9
 - **認証**: Devise（予定）
-- **テスト**: Rails標準（Minitest）+ Capybara + Selenium
+- **テスト**: RSpec（rspec-rails）+ FactoryBot + Faker + Capybara + Selenium
 
 RuboCop は `rubocop-rails-omakase` をベースにしている（`.rubocop.yml` 参照）。
 
@@ -92,5 +92,5 @@ PRおよび`main`へのpushで以下が自動実行される（`.github/workflow
 
 1. `scan_ruby`: Brakeman + bundler-audit
 2. `lint`: RuboCop
-3. `test`: Minitest（PostgreSQL サービスコンテナあり）
+3. `rspec`: RSpec（PostgreSQL サービスコンテナあり）
 4. `system-test`: Capybara（失敗時スクリーンショットをアーティファクト保存）
