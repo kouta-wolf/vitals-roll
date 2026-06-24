@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## リポジトリ
+
+[kouta-wolf/vitals-roll](https://github.com/kouta-wolf/vitals-roll)
+
+Issue は `#番号` で参照できる（例: #55）。
+
 ## 開発環境の起動
 
 Docker を使った開発環境:
