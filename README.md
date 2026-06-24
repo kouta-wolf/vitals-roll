@@ -221,7 +221,7 @@ TRPGはゲームの仕様上ツールをまたいで管理する時間はそこ�
 - DB：PostgreSQL 17.9
 - 環境構築：Docker 29
 - デプロイ：Render
-- CSSフレームワーク：TailwindCSS 4.4.0
+- CSSフレームワーク：TailwindCSS 4.3.1
 - 認証：Devise 4.9.4
 - ページネーション：kaminari 1.2.2
 - テスト：rspec-rails 8.0.4 + factory_bot_rails 6.5.1
