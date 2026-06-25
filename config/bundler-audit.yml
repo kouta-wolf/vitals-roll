@@ -2,4 +2,12 @@
 # CVEs that are not relevant to the application can be enumerated on the ignore list below.
 
 ignore:
-  - CVE-THAT-DOES-NOT-APPLY
+  # Devise 4.9.4 の以下2件は、いずれも本アプリで有効化していないモジュールに関する脆弱性のため無視する。
+  # 有効モジュール: database_authenticatable, registerable, recoverable, rememberable, validatable
+  #
+  # CVE-2026-32700 (GHSA-57hq-95w6-v4fc): Confirmable の change email レースコンディション
+  #   → confirmable 未使用のため影響なし
+  - CVE-2026-32700
+  # CVE-2026-40295 (GHSA-jp94-3292-c3xv): Timeoutable のオープンリダイレクト
+  #   → timeoutable 未使用のため影響なし
+  - CVE-2026-40295

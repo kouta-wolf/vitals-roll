@@ -1,0 +1,35 @@
+<main class="bg-gray-50">
+  <div class="m-4 p-8 bg-blue-200 max-w-lg mx-auto flex flex-col justify-center items-center gap-4 rounded-2xl">
+    <h1 class="text-3xl font-bold">新規登録</h1>
+
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "w-full space-y-5" }) do |f| %>
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <div>
+        <%= f.label :email, "メールアドレス", class: "block mb-1 font-medium text-slate-700" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email",
+              class: "w-full rounded-md border border-slate-300 bg-white px-4 py-2.5 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 focus:outline-none" %>
+      </div>
+
+      <div>
+        <%= f.label :password, "パスワード", class: "block mb-1 font-medium text-slate-700" %>
+        <%= f.password_field :password, autocomplete: "new-password",
+              class: "w-full rounded-md border border-slate-300 bg-white px-4 py-2.5 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 focus:outline-none" %>
+        <% if @minimum_password_length %>
+          <p class="mt-1 text-xs text-slate-500"><%= @minimum_password_length %>文字以上で入力してください</p>
+        <% end %>
+      </div>
+
+      <div>
+        <%= f.label :password_confirmation, "パスワード（再入力）", class: "block mb-1 font-medium text-slate-700" %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password",
+              class: "w-full rounded-md border border-slate-300 bg-white px-4 py-2.5 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 focus:outline-none" %>
+      </div>
+
+      <%= f.submit "登録する",
+            class: "w-full inline-flex h-12 items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 px-6 font-medium text-white transition active:scale-95 hover:cursor-pointer" %>
+    <% end %>
+
+    <%#= render "devise/shared/links" %>
+  </div>
+</main>

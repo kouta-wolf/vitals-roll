@@ -335,6 +335,7 @@ CCFOLIAではプレイヤーはバフがかかるたびにチャットパレッ�
 - encrypted_password : string / パスワード（Devise）
 - reset_password_token : string / パスワードリセット用トークン（Devise）
 - reset_password_sent_at : datetime / パスワードリセット送信日時（Devise）
+- remember_created_at : datetime / ログイン保持の有効化日時（Devise）※将来対応
 - created_at : datetime / 作成日時
 - updated_at : datetime / 更新日時
 
