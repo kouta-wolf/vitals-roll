@@ -6,9 +6,7 @@
     <p class="text-center text-gray-400">
       現在はSW2.5のみ対応しています。<br>順次更新予定
     </p>
-    <button class="inline-flex h-12  items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 px-24 text-white transition active:scale-95 hover:cursor-pointer">
-      今すぐ始める
-    </button>
+    <%= link_to "今すぐ始める", new_user_registration_path, class: "inline-flex h-12 items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 px-24 text-white transition active:scale-95 hover:cursor-pointer" %>
   </section>
   <section class="py-16  flex flex-col items-center gap-8">
     <h2 class="text-4xl text-center">
