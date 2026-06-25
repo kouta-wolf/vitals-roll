@@ -1,0 +1,23 @@
+<main class="flex flex-col justify-center items-center bg-gray-50">
+  <section>
+    <h1 class="text-3xl font-bold mt-8">お問い合わせ</h1>
+    <p class="my-8">お問い合わせ項目を入力してください。<br>送信後、確認のためGoogleフォームに画面が遷移します。<br><span style="color: red;">*</span>は必須項目です。</p>
+  </section>
+  <section>
+    <form action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSfdA_UlG-vTtWNQqn84Gyt9aRKHyTtwprSJd24rMInRgzGR5g/formResponse" method="post" class="w-full max-w-2xl mx-auto m-4 flex flex-col gap-4">
+      <div class="">
+        <label for="field-name">お名前</label>
+        <input type="text" id="field-name" name="entry.1226926100" class="border border-slate-400 rounded-md bg-white w-full p-3">
+      </div>
+      <div>
+        <label for="field-mail">メールアドレス<span style="color: red;">*</span></label>
+        <input type="email" id="field-mail" name="entry.192214602" class="border border-slate-400 rounded-md bg-white w-full p-3" required>
+      </div>
+      <div>
+        <label for="field-message">お問い合わせ内容<span style="color: red;">*</span></label>
+        <textarea id="field-message" name="entry.1166428996" class="border border-slate-400 rounded-md bg-white w-full p-3" required></textarea>
+      </div>
+      <button type="submit" class="mt-4 self-center bg-blue-600 text-white px-4 py-3 rounded-lg transition active:scale-95 hover:cursor-pointer">送信する</button>
+    </form>
+  </section>
+</main>
