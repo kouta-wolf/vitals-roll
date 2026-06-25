@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: vitals-roll
+    runtime: ruby
+    plan: free
+    buildCommand: "./bin/rails db:prepare assets:precompile"
+    startCommand: "bundle exec rails server -b 0.0.0.0 -p $PORT"
+    envVars:
+      - key: RAILS_ENV
+        value: production
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false

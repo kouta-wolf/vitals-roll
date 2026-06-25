@@ -90,18 +90,13 @@ test:
 production:
   primary: &primary_production
     <<: *default
-    database: myapp_production
-    username: myapp
-    password: <%= ENV["MYAPP_DATABASE_PASSWORD"] %>
+    url: <%= ENV["DATABASE_URL"] %>
   cache:
     <<: *primary_production
-    database: myapp_production_cache
     migrations_paths: db/cache_migrate
   queue:
     <<: *primary_production
-    database: myapp_production_queue
     migrations_paths: db/queue_migrate
   cable:
     <<: *primary_production
-    database: myapp_production_cable
     migrations_paths: db/cable_migrate
