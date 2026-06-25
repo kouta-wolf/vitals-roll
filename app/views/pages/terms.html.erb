@@ -1,13 +1,3 @@
-<header class="bg-white/80 backdrop-blur-md border-b border-gray-200 p-4 sticky top-0 z-10">
-  <nav class="flex justify-between max-w-6xl mx-auto items-center">
-    <a href="#" class="text-3xl">🎲Vitals Roll</a>
-    <div class="space-x-8">
-      <button class="inline-flex h-12 items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 px-6 font-medium text-white transition active:scale-95 hover:cursor-pointer">新規登録</button>
-      <a href="#" class="hover:text-gray-500">ログイン</a>
-    </div>
-  </nav>
-</header>
-
 <main class="bg-linear-to-br from-blue-100 via-sky-100 to-indigo-100 py-12 px-4">
   <article class="legal-doc max-w-3xl mx-auto bg-white rounded-xl shadow-sm ring-1 ring-slate-200 p-6 sm:p-10">
     <h1>利用規約</h1>
@@ -110,7 +100,7 @@
     <p>本サービスおよび本サービスに関連して運営者が提供するコンテンツ（プログラム、デザイン、文章、画像等を含みます）に関する著作権その他の知的財産権は、運営者または正当な権利者に帰属します。ユーザーは、これらを運営者の許諾なく、複製、転載、改変、再配布等してはなりません。</p>
 
     <h2>第10条（個人情報の取扱い）</h2>
-    <p>運営者は、本サービスの利用によって取得する個人情報について、別途定める「プライバシーポリシー」に従い適切に取り扱うものとします。</p>
+    <p>運営者は、本サービスの利用によって取得する個人情報について、別途定める「<%= link_to "プライバシーポリシー", privacy_path %>」に従い適切に取り扱うものとします。</p>
 
     <h2>第11条（利用規約の変更）</h2>
     <ol>
@@ -133,14 +123,3 @@
     <p class="text-right text-slate-500">以上</p>
   </article>
 </main>
-
-<footer class="p-2 bg-slate-900 text-slate-300">
-  <div class="flex flex-row m-4 space-x-4 text-sm">
-    <a href="#" class="hover:text-white">利用規約</a>
-    <a href="#" class="hover:text-white">プライバシーポリシー</a>
-    <a href="#" class="hover:text-white">お問い合わせ</a>
-  </div>
-  <div class="flex justify-center items-center text-gray-400 text-sm">
-    2026 ©Vitals Roll
-  </div>
-</footer>

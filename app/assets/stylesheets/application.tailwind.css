@@ -18,6 +18,9 @@
   .legal-doc p {
     @apply my-3;
   }
+  .legal-doc a {
+    @apply text-blue-600 underline underline-offset-2 hover:text-blue-700;
+  }
   .legal-doc ol {
     @apply list-decimal ps-6 space-y-2 my-3;
   }
