@@ -14,4 +14,11 @@ RSpec.describe "Pages", type: :request do
       expect(response).to have_http_status(200)
     end
   end
+
+  describe "GET /contact" do
+    it "正常にアクセスできるか" do
+      get contact_path
+      expect(response).to have_http_status(200)
+    end
+  end
 end
