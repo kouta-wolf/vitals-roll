@@ -21,6 +21,7 @@ erDiagram
         string encrypted_password "パスワード(Devise)"
         string reset_password_token "パスワードリセット用トークン(Devise)"
         datetime reset_password_sent_at "パスワードリセット送信日時(Devise)"
+        datetime remember_created_at "ログイン保持の有効化日時(Devise)"
         datetime created_at "作成日時"
         datetime updated_at "更新日時"
     }
