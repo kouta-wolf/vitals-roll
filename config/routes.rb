@@ -2,6 +2,8 @@ Rails.application.routes.draw do
   devise_for :users
   root "top#index"
 
+  resources :characters
+
   # 静的ページ
   controller :pages do
     get "terms", action: :terms
