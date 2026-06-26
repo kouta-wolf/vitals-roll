@@ -13,7 +13,7 @@ RSpec.describe "Registrations", type: :request do
       expect {
         post user_registration_path, params: { user: { email: "new@example.com", password: "password", password_confirmation: "password" } }
       }.to change(User, :count).by(1)
-      expect(response).to redirect_to(root_path)
+      expect(response).to redirect_to(characters_path)
     end
   end
 
