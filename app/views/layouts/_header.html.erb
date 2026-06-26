@@ -1,9 +1,14 @@
 <header class="bg-white/80 backdrop-blur-md border-b border-gray-200 p-4 sticky top-0 z-10">
   <nav class="flex justify-between max-w-6xl mx-auto items-center">
     <%= link_to("🎲Vitals Roll", root_path, {class: "text-3xl"})%>
-    <div class="space-x-8">
-      <%= link_to "新規登録", new_user_registration_path, class: "inline-flex h-12 items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 px-6 font-medium text-white transition active:scale-95 hover:cursor-pointer" %>
-      <a href="#" class="hover:text-gray-500">ログイン</a>
+    <div class="flex items-center space-x-8">
+      <% if user_signed_in? %>
+        <span class="text-gray-600"><%= current_user.email %></span>
+        <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "inline-flex h-12 items-center justify-center rounded-md bg-gray-600 hover:bg-gray-700 px-6 font-medium text-white transition active:scale-95 hover:cursor-pointer" %>
+      <% else %>
+        <%= link_to "新規登録", new_user_registration_path, class: "inline-flex h-12 items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 px-6 font-medium text-white transition active:scale-95 hover:cursor-pointer" %>
+        <%= link_to "ログイン", new_user_session_path, class: "hover:text-gray-500" %>
+      <% end %>
     </div>
   </nav>
 </header>
