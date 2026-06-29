@@ -1,5 +1,5 @@
 class CharactersController < ApplicationController
   def index
-    # TODO: Characterモデル実装後に current_user.characters を表示する
+    @characters = current_user.characters.page(params[:page]).per(8)
   end
 end

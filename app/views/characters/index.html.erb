@@ -1,2 +1,40 @@
-<h1>キャラクター一覧画面</h1>
-<p>テスト</p>
+<main>
+  <div class="m-4 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800">キャラクター一覧</h1>
+      <p class="text-gray-500">作成したキャラクター一覧画面です</p>
+    </div>
+    <button class="inline-flex h-10 items-center rounded-md bg-blue-600 hover:bg-blue-700 px-4 text-white transition active:scale-95 hover:cursor-pointer">新規作成</button>
+  </div>
+  <div class="m-4 bg-white-80">
+    <% if @characters.total_count.zero? %>
+      <div class="m-4 flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-gray-300 py-16 text-center">
+        <p class="text-5xl">🎲</p>
+        <p class="text-lg font-medium text-slate-700">まだキャラクターがいません</p>
+        <p class="text-sm text-gray-500">最初のキャラクターを作成して始めましょう</p>
+      </div>
+    <% else %>
+      <p>全<%= @characters.total_count %>件中 <%= @characters.offset_value + 1 %>〜<%= @characters.offset_value + @characters.count %>件を表示</p>
+      <div class="m-4 overflow-x-auto rounded-lg border border-gray-200">
+        <table class="w-full border-collapse text-left">
+          <thead class="bg-gray-100 text-sm text-gray-600">
+            <tr class="text-center font-md">
+              <th class="p-4">キャラクター名</th>
+              <th class="p-4">種族</th>
+              <th class="p-4">メイン技能</th>
+              <th class="p-4">Lv</th>
+              <th class="p-4">最終更新</th>
+              <th class="p-4">操作</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <%= render @characters %>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-4 flex justify-center">
+        <%= paginate @characters %>
+      </div>
+    <% end %>
+  </div>
+</main>
