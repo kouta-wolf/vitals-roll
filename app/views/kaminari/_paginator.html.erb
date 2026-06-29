@@ -1,0 +1,12 @@
+<%# ページネーション全体のコンテナ -%>
+<%= paginator.render do -%>
+  <nav class="flex items-center gap-1" role="navigation" aria-label="pager">
+    <% each_page do |page| -%>
+      <% if page.display_tag? -%>
+        <%= page_tag page %>
+      <% elsif !page.was_truncated? -%>
+        <%= gap_tag %>
+      <% end -%>
+    <% end -%>
+  </nav>
+<% end -%>

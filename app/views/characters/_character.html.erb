@@ -1,0 +1,13 @@
+<tr class="text-center hover:bg-gray-50">
+  <td class="px-4 py-3 font-medium text-slate-800"><%= character.name %></td>
+  <td class="px-4 py-3 text-gray-600"><%= character.race %></td>
+  <td class="px-4 py-3 text-gray-600"><%= character.main_class %></td>
+  <td class="px-4 py-3 text-gray-600"><%= character.main_class_level %></td>
+  <td class="px-4 py-3 text-gray-500 text-sm"><%= character.updated_at.strftime("%Y/%m/%d %H:%M") %></td>
+  <td class="px-4 py-3">
+    <div class="flex justify-center gap-3">
+      <%= link_to "編集" %>
+      <%= button_to "削除" %>
+    </div>
+  </td>
+</tr>
