@@ -1,0 +1,9 @@
+<%# ページ番号リンク（現在ページは強調表示） -%>
+<% if page.current? %>
+  <span class="inline-flex items-center justify-center min-w-10 h-10 px-3 rounded-md bg-blue-600 text-white text-sm font-medium" aria-current="page">
+    <%= page %>
+  </span>
+<% else %>
+  <%= link_to page, url, remote: remote, rel: page.rel,
+      class: "inline-flex items-center justify-center min-w-10 h-10 px-3 rounded-md border border-gray-200 text-sm text-gray-700 hover:bg-gray-100 transition" %>
+<% end %>
