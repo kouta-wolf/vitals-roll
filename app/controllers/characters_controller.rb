@@ -1,5 +1,24 @@
 class CharactersController < ApplicationController
   def index
-    @characters = current_user.characters.page(params[:page]).per(8)
+    @characters = current_user.characters.order(updated_at: :desc).page(params[:page]).per(8)
+  end
+
+  def new
+    @character = current_user.characters.new
+  end
+
+  def create
+    @character = current_user.characters.new(character_params)
+    if @character.save
+      redirect_to characters_path, notice: "キャラクターを作成しました"
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  private
+
+  def character_params
+    params.require(:character).permit(:name, :race, :main_class, :main_class_level, :dexterity, :agility, :strength, :vitality, :intelligence, :spirit, :defense, :current_rounds)
   end
 end
