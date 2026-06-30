@@ -74,7 +74,7 @@ RSpec.describe "Characters", type: :request do
     end
 
     let(:invalid_params) do
-      { character: { name: "", dexterity: nil, agility: nil, strength: nil, vitality: nil, intelligence: nil, spirit: nil }}
+      { character: { name: "", dexterity: nil, agility: nil, strength: nil, vitality: nil, intelligence: nil, spirit: nil } }
     end
 
     context "未ログインの場合" do
@@ -89,7 +89,7 @@ RSpec.describe "Characters", type: :request do
 
       context "有効なパラメータの場合" do
         it "キャラクターが1件増える" do
-          expect {post characters_path, params: valid_params}.to change(user.characters, :count).by(1)
+          expect { post characters_path, params: valid_params }.to change(user.characters, :count).by(1)
         end
 
         it "一覧ページにリダイレクトされる" do
