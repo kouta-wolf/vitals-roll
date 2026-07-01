@@ -122,4 +122,35 @@ RSpec.describe "Characters", type: :request do
       end
     end
   end
+
+  describe "GET /characters/:id" do
+    let(:user_character) { create(:character, user: user) }
+    context "未ログインの場合" do
+      it "ログインページにリダイレクトされる" do
+        get character_path(user_character)
+        expect(response).to redirect_to new_user_session_path
+      end
+    end
+
+    context "ログイン済の場合" do
+      before {sign_in user}
+
+      it "正常にアクセスできる(200)" do
+        get character_path(user_character)
+        expect(response).to have_http_status(200)
+      end
+
+      it "正常に内容が表示される" do
+        get character_path(user_character)
+        expect(response.body).to include("テスター・ドラゴン")
+      end
+
+      it "他のユーザーのキャラを閲覧できないこと" do
+        other_user = create(:user)
+        other_character = create(:character, user: other_user, name: "ヨソ・キャラ")
+        get character_path(other_character)
+        expect(response).to have_http_status(404)
+      end
+    end
+  end
 end
