@@ -133,7 +133,7 @@ RSpec.describe "Characters", type: :request do
     end
 
     context "ログイン済の場合" do
-      before {sign_in user}
+      before { sign_in user }
 
       it "正常にアクセスできる(200)" do
         get character_path(user_character)
