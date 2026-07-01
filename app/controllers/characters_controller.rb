@@ -16,6 +16,10 @@ class CharactersController < ApplicationController
     end
   end
 
+  def show
+    @character = current_user.characters.find(params[:id])
+  end
+
   private
 
   def character_params

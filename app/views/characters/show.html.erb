@@ -1,0 +1,32 @@
+<main>
+  <section class="flex justify-between items-center border-b border-gray-300 p-4">
+    <div>
+      <h1 class="text-3xl"><%= @character.name %></h1>
+      <p class="text-gray-500"><%= @character.race %>/<%= @character.main_class %>/Lv:<%= @character.main_class_level %></p>
+    </div>
+    <%= link_to "キャラクター編集", edit_character_path(@character),
+        class: "inline-flex h-10 items-center rounded-md bg-blue-600 hover:bg-blue-700 px-4 text-white transition active:scale-95 hover:cursor-pointer" %>
+  </section>
+
+  <div class="flex gap-4 flex-1 m-4">
+    <div class="flex flex-col gap-4 flex-1">
+      <section class="p-4 border border-gray-300">
+        <h2 class="text-2xl">ラウンド管理</h2>
+      </section>
+
+      <section class="p-4 border border-gray-300">
+        <h2 class="text-2xl">有効な効果、補正一覧</h2>
+      </section>
+
+      <section class="p-4 border border-gray-300">
+        <h2 class="text-2xl">キャラクター基礎情報</h2>
+      </section>
+    </div>
+
+    <div class="flex-1">
+      <section class="p-4 border border-gray-300">
+        <h2 class="text-2xl">判定式</h2>
+      </section>
+    </div>
+  </div>
+</main>
