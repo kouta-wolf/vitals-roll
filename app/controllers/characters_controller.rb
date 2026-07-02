@@ -20,6 +20,19 @@ class CharactersController < ApplicationController
     @character = current_user.characters.find(params[:id])
   end
 
+  def edit
+    @character = current_user.characters.find(params[:id])
+  end
+
+  def update
+    @character = current_user.characters.find(params[:id])
+    if @character.update(character_params)
+      redirect_to @character, notice: "キャラクターを更新しました"
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def character_params

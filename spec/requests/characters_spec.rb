@@ -153,4 +153,120 @@ RSpec.describe "Characters", type: :request do
       end
     end
   end
+
+  describe "GET /characters/:id/edit" do
+    let(:user_character) { create(:character, user: user) }
+
+    context "未ログインの場合" do
+      it "ログインページにリダイレクトされる" do
+        get edit_character_path(user_character)
+        expect(response).to redirect_to new_user_session_path
+      end
+    end
+
+    context "ログイン済の場合" do
+      before { sign_in user }
+
+      it "正常にアクセスできる" do
+        get edit_character_path(user_character)
+        expect(response).to have_http_status(200)
+      end
+
+      it "正常に内容が表示される" do
+        get edit_character_path(user_character)
+        expect(response.body).to include("テスター・ドラゴン")
+        expect(response.body).to include("テストドレイク")
+      end
+
+      it "他のユーザーのキャラを閲覧できない" do
+        other_user = create(:user)
+        other_character = create(:character, user: other_user, name: "ヨソ・キャラ")
+        get edit_character_path(other_character)
+        expect(response).to have_http_status(404)
+      end
+    end
+  end
+
+  describe "PATCH /characters/:id" do
+    let(:user_character) { create(:character, user: user) }
+    let(:valid_params) do
+      {
+        character: {
+          name: "アルテスト", race: "ヒューマン", main_class: "フェンサー", main_class_level: 3,
+          dexterity: 12, agility: 10, strength: 14,
+          vitality: 11, intelligence: 8, spirit: 9, defense: 4
+        }
+      }
+    end
+
+    let(:invalid_params) do
+      {
+        character: {
+          name: "", race: "", main_class: "", main_class_level: 3,
+          dexterity: 12, agility: 10, strength: 14,
+          vitality: 11, intelligence: 8, spirit: 9, defense: 4
+        }
+      }
+    end
+
+    context "未ログインの場合" do
+      it "ログインページにリダイレクトされる" do
+        patch character_path(user_character), params: valid_params
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "ログイン済の場合" do
+      before { sign_in user }
+
+      context "有効なパラメータの場合" do
+        it "有効なパラメータで更新できる" do
+          patch character_path(user_character), params: valid_params
+          expect(response).to have_http_status(302)
+        end
+
+        it "キャラクターの内容が更新される" do
+          expect {
+            patch character_path(user_character), params: valid_params
+          }.to change { user_character.reload.name }.to("アルテスト")
+        end
+
+
+        it "更新後メッセージが表示される" do
+          patch character_path(user_character), params: valid_params
+          expect(flash[:notice]).to eq("キャラクターを更新しました")
+        end
+
+        it "更新後詳細ページへリダイレクトされる" do
+          patch character_path(user_character), params: valid_params
+          expect(response).to redirect_to(character_path(user_character))
+        end
+      end
+
+      context "無効なパラメータの場合" do
+        it "無効なパラメータで更新されない" do
+          patch character_path(user_character), params: invalid_params
+          expect(response).to have_http_status(422)
+        end
+
+        it "更新できない場合エラーメッセージが表示される" do
+          patch character_path(user_character), params: invalid_params
+          expect(response.body).to include("入力に誤りがあります")
+        end
+
+        it "更新出来ない場合、DBの値が変わっていない" do
+          expect { patch character_path(user_character), params: invalid_params }.not_to change { user_character.reload.name }
+        end
+      end
+
+      context "認可チェック" do
+        it "他のユーザーのキャラクターを編集できない" do
+          other_user = create(:user)
+          other_character = create(:character, user: other_user, name: "ヨソ・キャラ")
+          patch character_path(other_character), params: valid_params
+          expect(response).to have_http_status(404)
+        end
+      end
+    end
+  end
 end

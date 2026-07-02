@@ -1,0 +1,112 @@
+<% if @character.errors.any? %>
+  <div class="bg-red-50 border border-red-300 rounded p-4 mb-6">
+    <p class="font-bold text-red-700 mb-2">入力に誤りがあります:</p>
+    <ul class="list-disc list-inside text-red-600 text-sm">
+      <% @character.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: @character, class: "space-y-6" do |form| %>
+
+  <%# --- キャラクター基本情報 --- %>
+  <section class="bg-white border rounded-lg p-4 space-y-4">
+    <h2 class="font-semibold text-lg border-b pb-2">基本情報</h2>
+
+    <div>
+      <%= form.label :name, "キャラクター名", class: "block text-sm font-medium mb-1" %>
+      <%= form.text_field :name,
+            placeholder: "例: アルフォンス",
+            class: "w-full border rounded px-3 py-2 text-sm" %>
+    </div>
+
+    <div>
+      <%= form.label :race, "種族", class: "block text-sm font-medium mb-1" %>
+      <%= form.text_field :race,
+            placeholder: "例: ヒューマン",
+            class: "w-full border rounded px-3 py-2 text-sm" %>
+    </div>
+
+    <div class="flex gap-4">
+      <div class="flex-1">
+        <%= form.label :main_class, "メインクラス", class: "block text-sm font-medium mb-1" %>
+        <%= form.text_field :main_class,
+              placeholder: "例: ファイター",
+              class: "w-full border rounded px-3 py-2 text-sm" %>
+      </div>
+      <div class="w-24">
+        <%= form.label :main_class_level, "レベル", class: "block text-sm font-medium mb-1" %>
+        <%= form.number_field :main_class_level,
+              min: 1, max: 15, value: 1,
+              class: "w-full border rounded px-3 py-2 text-sm" %>
+      </div>
+    </div>
+  </section>
+
+  <%# --- 基本ステータス --- %>
+  <section class="bg-white border rounded-lg p-4 space-y-4">
+    <h2 class="font-semibold text-lg border-b pb-2">基本ステータス</h2>
+    <p class="text-xs text-gray-500">1〜999の整数で入力してください</p>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <%= form.label :dexterity, "器用度（DEX）", class: "block text-sm font-medium mb-1" %>
+        <%= form.number_field :dexterity,
+              min: 1, max: 999,
+              class: "w-full border rounded px-3 py-2 text-sm" %>
+      </div>
+      <div>
+        <%= form.label :agility, "敏捷度（AGI）", class: "block text-sm font-medium mb-1" %>
+        <%= form.number_field :agility,
+              min: 1, max: 999,
+              class: "w-full border rounded px-3 py-2 text-sm" %>
+      </div>
+      <div>
+        <%= form.label :strength, "筋力（STR）", class: "block text-sm font-medium mb-1" %>
+        <%= form.number_field :strength,
+              min: 1, max: 999,
+              class: "w-full border rounded px-3 py-2 text-sm" %>
+      </div>
+      <div>
+        <%= form.label :vitality, "生命力（VIT）", class: "block text-sm font-medium mb-1" %>
+        <%= form.number_field :vitality,
+              min: 1, max: 999,
+              class: "w-full border rounded px-3 py-2 text-sm" %>
+      </div>
+      <div>
+        <%= form.label :intelligence, "知力（INT）", class: "block text-sm font-medium mb-1" %>
+        <%= form.number_field :intelligence,
+              min: 1, max: 999,
+              class: "w-full border rounded px-3 py-2 text-sm" %>
+      </div>
+      <div>
+        <%= form.label :spirit, "精神力（MND）", class: "block text-sm font-medium mb-1" %>
+        <%= form.number_field :spirit,
+              min: 1, max: 999,
+              class: "w-full border rounded px-3 py-2 text-sm" %>
+      </div>
+    </div>
+  </section>
+
+  <%# --- 防護点 --- %>
+  <section class="bg-white border rounded-lg p-4 space-y-4">
+    <h2 class="font-semibold text-lg border-b pb-2">防具</h2>
+
+    <div class="w-32">
+      <%= form.label :defense, "防護点", class: "block text-sm font-medium mb-1" %>
+      <%= form.number_field :defense,
+            min: 0, value: 0,
+            class: "w-full border rounded px-3 py-2 text-sm" %>
+    </div>
+  </section>
+
+  <div class="flex gap-3">
+    <%= form.submit @character.persisted? ? "更新する" : "作成する",
+          class: "bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded cursor-pointer" %>
+    <%= link_to "キャンセル", @character.persisted? ? character_path(@character) : characters_path,
+          class: "text-gray-500 hover:text-gray-700 px-4 py-2" %>
+  </div>
+
+<% end %>
