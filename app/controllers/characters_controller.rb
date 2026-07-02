@@ -33,6 +33,12 @@ class CharactersController < ApplicationController
     end
   end
 
+  def destroy
+    @character = current_user.characters.find(params[:id])
+    @character.destroy
+    redirect_to characters_path, notice: "キャラクターを削除しました"
+  end
+
   private
 
   def character_params

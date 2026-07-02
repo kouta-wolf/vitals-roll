@@ -269,4 +269,43 @@ RSpec.describe "Characters", type: :request do
       end
     end
   end
+
+  describe "DELETE /characters/:id" do
+    let!(:user_character) { create(:character, user: user) }
+
+    context "未ログインの場合" do
+      it "ログインページにリダイレクトされる" do
+        delete character_path(user_character)
+        expect(response).to redirect_to new_user_session_path
+      end
+    end
+
+    context "ログイン済みの場合" do
+      before { sign_in user }
+
+      it "正常に削除できる(レコードが1件減る)" do
+        expect { delete character_path(user_character) }.to change(user.characters, :count).by(-1)
+      end
+
+      it "削除後のメッセージが表示される" do
+        delete character_path(user_character)
+        expect(flash[:notice]).to eq("キャラクターを削除しました")
+      end
+
+      it "削除した後に削除キャラが表示されていないか" do
+        delete character_path(user_character)
+        follow_redirect!
+        expect(response.body).not_to include("テスター・ドラゴン")
+      end
+
+      context "認可チェック" do
+        it "他のユーザーのキャラクターを削除できない" do
+          other_user = create(:user)
+          other_character = create(:character, user: other_user, name: "ヨソ・キャラ")
+          expect { delete character_path(other_character) }.not_to change(Character, :count)
+          expect(response).to have_http_status(404)
+        end
+      end
+    end
+  end
 end
