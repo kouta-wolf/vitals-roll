@@ -46,6 +46,4 @@ RSpec.describe Weapon, type: :model do
       expect(weapon.errors[:critical]).to be_present
     end
   end
-
-  
 end
