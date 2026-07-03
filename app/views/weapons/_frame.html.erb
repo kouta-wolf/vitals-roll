@@ -1,0 +1,14 @@
+<%= turbo_frame_tag dom_id(character, :weapons) do %>
+  <ul class="list-disc list-inside text-sm space-y-1 mb-3">
+    <% character.weapons.each do |w| %>
+      <li><%= w.name %></li>
+    <% end %>
+  </ul>
+
+  <% if weapon %>
+    <%= render "weapons/form", character: character, weapon: weapon %>
+  <% else %>
+    <%= link_to "＋ 武器を追加", new_character_weapon_path(character),
+          class: "text-blue-600 hover:underline text-sm" %>
+  <% end %>
+<% end %>
