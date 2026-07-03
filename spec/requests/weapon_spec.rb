@@ -59,9 +59,9 @@ RSpec.describe "Weapons", type: :request do
           expect { post character_weapons_path(character), params: valid_params }.to change(Weapon, :count).by(1)
         end
 
-        it "キャラクター詳細ページにリダイレクトされる" do
+        it "キャラクター編集ページにリダイレクトされる" do
           post character_weapons_path(character), params: valid_params
-          expect(response).to redirect_to(character_path(character))
+          expect(response).to redirect_to(edit_character_path(character))
         end
       end
 
