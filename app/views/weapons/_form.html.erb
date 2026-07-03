@@ -1,0 +1,60 @@
+<% if weapon.errors.any? %>
+  <div class="bg-red-50 border border-red-300 rounded p-4 mb-6">
+    <p class="font-bold text-red-700 mb-2">入力に誤りがあります:</p>
+    <ul class="list-disc list-inside text-red-600 text-sm">
+      <% weapon.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: [character, weapon], class: "space-y-6" do |form| %>
+
+  <%# --- 武器情報 --- %>
+  <section class="bg-white border rounded-lg p-4 space-y-4">
+    <h2 class="font-semibold text-lg border-b pb-2">武器情報</h2>
+
+    <div>
+      <%= form.label :name, "武器名", class: "block text-sm font-medium mb-1" %>
+      <%= form.text_field :name,
+            placeholder: "例: ロングソード",
+            class: "w-full border rounded px-3 py-2 text-sm" %>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <%= form.label :power, "威力", class: "block text-sm font-medium mb-1" %>
+        <%= form.number_field :power,
+              min: 0, max: 500, value: 0,
+              class: "w-full border rounded px-3 py-2 text-sm" %>
+      </div>
+      <div>
+        <%= form.label :critical, "クリティカル値", class: "block text-sm font-medium mb-1" %>
+        <%= form.number_field :critical,
+              min: 3, max: 13, value: 10,
+              class: "w-full border rounded px-3 py-2 text-sm" %>
+      </div>
+      <div>
+        <%= form.label :fixed_value, "固定値", class: "block text-sm font-medium mb-1" %>
+        <%= form.number_field :fixed_value,
+              min: -10, max: 100, value: 0,
+              class: "w-full border rounded px-3 py-2 text-sm" %>
+      </div>
+      <div>
+        <%= form.label :fixed_hit_rate, "命中補正", class: "block text-sm font-medium mb-1" %>
+        <%= form.number_field :fixed_hit_rate,
+              min: -10, max: 10, value: 0,
+              class: "w-full border rounded px-3 py-2 text-sm" %>
+      </div>
+    </div>
+  </section>
+
+  <div class="flex gap-3">
+    <%= form.submit "作成する",
+          class: "bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded cursor-pointer" %>
+    <%= link_to "キャンセル", edit_character_path(character),
+          class: "text-gray-500 hover:text-gray-700 px-4 py-2" %>
+  </div>
+
+<% end %>

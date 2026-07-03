@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_29_011614) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_03_044713) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -45,5 +45,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_011614) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "weapons", force: :cascade do |t|
+    t.bigint "character_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "critical", default: 10
+    t.integer "fixed_hit_rate", default: 0
+    t.integer "fixed_value", default: 0
+    t.string "name", null: false
+    t.integer "power", default: 0
+    t.datetime "updated_at", null: false
+    t.index ["character_id"], name: "index_weapons_on_character_id"
+  end
+
   add_foreign_key "characters", "users"
+  add_foreign_key "weapons", "characters"
 end

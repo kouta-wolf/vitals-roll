@@ -2,7 +2,9 @@ Rails.application.routes.draw do
   devise_for :users
   root "top#index"
 
-  resources :characters
+  resources :characters do
+    resources :weapons, only: [ :new, :create ]
+  end
 
   # 静的ページ
   controller :pages do
