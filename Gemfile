@@ -43,7 +43,7 @@ gem "thruster", require: false
 gem "image_processing", "~> 1.2"
 
 # 認証用gem
-gem "devise", "~> 4.9.4"
+gem "devise", "~> 5.0.4"
 
 # ページネーション用gem
 gem "kaminari", "~> 1.2.2"
