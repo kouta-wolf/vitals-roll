@@ -73,6 +73,9 @@ group :development do
 
   # Live reload on file changes (.erb / CSS / JS) [https://github.com/hotwired/spark]
   gem "hotwire-spark"
+
+  # Ruby LSP対応エディタ向けのLanguage Server [https://github.com/Shopify/ruby-lsp]
+  gem "ruby-lsp", "~> 0.26.9", require: false
 end
 
 group :test do
