@@ -18,8 +18,6 @@ docker compose up
 
 アクセス: http://localhost:3000
 
-Zed の Dev Containers機能を使う場合、プロジェクトを開くと `.devcontainer/devcontainer.json` を検知して「Open in Container」の確認が出るので選択する（`compose.yml`のwebサービスに接続される）。
-
 ローカルで直接起動する場合（PostgreSQL が別途必要）:
 
 ```bash

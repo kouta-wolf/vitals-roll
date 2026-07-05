@@ -1,7 +1,0 @@
-{
-  "name": "vitals-roll",
-  "dockerComposeFile": "../compose.yml",
-  "service": "web",
-  "workspaceFolder": "/myapp",
-  "shutdownAction": "stopCompose"
-}
