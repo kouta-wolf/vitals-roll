@@ -14,6 +14,21 @@ class WeaponsController < ApplicationController
     end
   end
 
+  def edit
+    @character = current_user.characters.find(params[:character_id])
+    @weapon = @character.weapons.find(params[:id])
+  end
+
+  def update
+    @character = current_user.characters.find(params[:character_id])
+    @weapon = @character.weapons.find(params[:id])
+    if @weapon.update(weapon_params)
+      redirect_to edit_character_path(@character), notice: "武器を更新しました"
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def weapon_params

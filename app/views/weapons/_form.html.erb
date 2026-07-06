@@ -51,7 +51,7 @@
   </section>
 
   <div class="flex gap-3">
-    <%= form.submit "作成する",
+    <%= form.submit weapon.persisted? ? "更新する" : "作成する",
           class: "bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded cursor-pointer" %>
     <%= link_to "キャンセル", edit_character_path(character),
           class: "text-gray-500 hover:text-gray-700 px-4 py-2" %>

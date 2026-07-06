@@ -1,7 +1,11 @@
 <%= turbo_frame_tag dom_id(character, :weapons) do %>
   <ul class="list-disc list-inside text-sm space-y-1 mb-3">
-    <% character.weapons.each do |w| %>
-      <li><%= w.name %></li>
+    <% character.weapons.select(&:persisted?).each do |w| %>
+      <li class="flex items-center justify-between">
+        <span><%= w.name %></span>
+        <%= link_to "編集", edit_character_weapon_path(character, w),
+              class: "text-blue-600 hover:underline text-xs" %>
+      </li>
     <% end %>
   </ul>
 
