@@ -3,7 +3,7 @@ Rails.application.routes.draw do
   root "top#index"
 
   resources :characters do
-    resources :weapons, only: [ :new, :create ]
+    resources :weapons, only: [ :new, :create, :edit, :update ]
   end
 
   # 静的ページ
