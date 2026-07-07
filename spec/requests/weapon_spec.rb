@@ -203,4 +203,65 @@ RSpec.describe "Weapons", type: :request do
       end
     end
   end
+
+  describe "DELETE /characters/:character_id/weapons/:id" do
+    let(:character) { create(:character, user: user) }
+    let!(:weapon) { create(:weapon, character: character) }
+
+    context "未ログインの場合" do
+      it "ログインページにリダイレクトされる" do
+        delete character_weapon_path(character, weapon)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "ログイン済の場合" do
+      before { sign_in user }
+
+      it "削除に成功する" do
+        delete character_weapon_path(character, weapon)
+        expect(response).to have_http_status(:found)
+      end
+
+      it "武器が削除される" do
+        expect { delete character_weapon_path(character, weapon) }.to change(Weapon, :count).by(-1)
+      end
+
+      it "キャラクター編集ページにリダイレクトされる" do
+        delete character_weapon_path(character, weapon)
+        expect(response).to redirect_to(edit_character_path(character))
+      end
+
+      it "削除後メッセージが表示される" do
+        delete character_weapon_path(character, weapon)
+        expect(flash[:notice]).to eq("武器を削除しました")
+      end
+
+      context "認可チェック" do
+        it "存在しない武器idを指定した場合404になり削除されない" do
+          expect {
+            delete character_weapon_path(character, id: -1)
+          }.not_to change(Weapon, :count)
+          expect(response).to have_http_status(:not_found)
+        end
+
+        it "他ユーザーのキャラクターの武器を削除できない" do
+          other_character = create(:character, user: create(:user))
+          other_weapon = create(:weapon, character: other_character)
+          expect {
+            delete character_weapon_path(other_character, other_weapon)
+          }.not_to change(Weapon, :count)
+          expect(response).to have_http_status(:not_found)
+        end
+
+        it "自分の別キャラクターに紐づく武器IDを指定した場合削除できない" do
+          another_character = create(:character, user: user)
+          expect {
+            delete character_weapon_path(another_character, weapon)
+          }.not_to change(Weapon, :count)
+          expect(response).to have_http_status(:not_found)
+        end
+      end
+    end
+  end
 end
