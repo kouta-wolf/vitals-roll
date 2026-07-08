@@ -10,9 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_03_044713) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_08_231525) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "buff_presets", force: :cascade do |t|
+    t.integer "bonus_value", null: false
+    t.datetime "created_at", null: false
+    t.integer "duration_rounds"
+    t.string "name", null: false
+    t.string "special_type"
+    t.string "target_status"
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_buff_presets_on_name", unique: true
+  end
 
   create_table "characters", force: :cascade do |t|
     t.integer "agility", null: false
