@@ -1,3 +1,34 @@
+# アプリ提供のバフプリセット（本番にも投入するため development ガードの外に置く）
+buff_presets = [
+  {
+    name:            "クリティカルレイ",
+    target_status:   nil,
+    bonus_value:     1,
+    duration_rounds: nil,
+    special_type:    "critical_ray"
+  },
+  {
+    name:            "首刈り刀",
+    target_status:   nil,
+    bonus_value:     0,
+    duration_rounds: nil,
+    special_type:    "kubikari"
+  },
+  {
+    name:            "マッスルベアー",
+    target_status:   "strength",
+    bonus_value:     12,
+    duration_rounds: 3,
+    special_type:    nil
+  }
+]
+
+buff_presets.each do |attrs|
+  BuffPreset.find_or_create_by!(name: attrs[:name]) do |bp|
+    bp.assign_attributes(attrs.except(:name))
+  end
+end
+
 if Rails.env.development?
   # 空状態の確認用ユーザーデータ
   User.find_or_create_by!(email: "blank@test.com") do |u|
