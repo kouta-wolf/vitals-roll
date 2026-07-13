@@ -1,0 +1,4 @@
+<div id="<%= dom_id(buff) %>" class="flex items-center justify-between text-sm border-b border-gray-100 py-1">
+  <span><%= buff.display_name %></span>
+  <span class="text-gray-500">残り<%= buff.remaining_rounds.nil? ? "∞" : "#{buff.remaining_rounds}R" %></span>
+</div>

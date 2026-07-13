@@ -18,6 +18,7 @@ class CharactersController < ApplicationController
 
   def show
     @character = current_user.characters.find(params[:id])
+    @buff_presets = BuffPreset.all
   end
 
   def edit

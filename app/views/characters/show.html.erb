@@ -16,6 +16,12 @@
 
       <section class="p-4 border border-gray-300">
         <h2 class="text-2xl">有効な効果、補正一覧</h2>
+
+        <div id="<%= dom_id(@character, :buffs) %>" class="space-y-1 mt-3">
+          <%= render @character.buffs %>
+        </div>
+
+        <%= render "buffs/form", character: @character, buff_presets: @buff_presets %>
       </section>
 
       <section class="p-4 border border-gray-300">
