@@ -4,7 +4,7 @@ buff_presets = [
     name:            "クリティカルレイ",
     target_status:   nil,
     bonus_value:     1,
-    duration_rounds: nil,
+    duration_rounds: 1,
     special_type:    "critical_ray"
   },
   {
