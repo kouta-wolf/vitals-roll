@@ -10,8 +10,9 @@ class Buff < ApplicationRecord
   validates :bonus_value, numericality: { only_integer: true, in: -999..999 }
   validates :duration_rounds, numericality: { only_integer: true, in: 0..50 }, allow_nil: true
   validates :remaining_rounds, numericality: { only_integer: true, in: 0..50 }, allow_nil: true
-  # special_typeを持たないため、通常バフのみ(target_status必須)
-  validates :target_status, presence: true, inclusion: { in: TARGET_STATUSES }
+  # 通常バフのみtarget_status必須。特殊プリセット由来(special_type有り)は対象ステータスの概念が無いため不要
+  validates :target_status, presence: true, inclusion: { in: TARGET_STATUSES },
+                             unless: -> { buff_preset&.special_type.present? }
 
   # display_name/special_typeの参照方法は次issueで検討
   def display_name

@@ -42,6 +42,12 @@ RSpec.describe Buff, type: :model do
         expect(buff).to be_invalid
         expect(buff.errors[:target_status]).to be_present
       end
+
+      it "特殊プリセット由来バフはtarget_statusがnilでも有効になるか" do
+        special_preset = create(:buff_preset, :special)
+        buff = build(:buff, :from_preset, buff_preset: special_preset, target_status: nil)
+        expect(buff).to be_valid
+      end
     end
   end
 
