@@ -22,4 +22,16 @@ class BuffPreset < ApplicationRecord
   validates :target_status, inclusion: { in: TARGET_STATUSES }, allow_nil: true
   # 通常バフ(special_type=nil)のみ対象ステータス必須。特殊バフは末尾ポン付けのため不要
   validates :target_status, presence: true, if: -> { special_type.nil? }
+
+  # 判定式計算に必要な数値だけをコピー(nameやspecial_typeはbuff_preset経由で参照するため含めない)
+  def build_buff_for(character)
+    character.buffs.new(
+      buff_preset: self,
+      bonus_value: bonus_value,
+      target_status: target_status,
+      duration_rounds: duration_rounds,
+      remaining_rounds: duration_rounds,
+      active: true
+    )
+  end
 end
