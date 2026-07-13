@@ -1,4 +1,6 @@
 class BuffPreset < ApplicationRecord
+  has_many :buffs # 管理人所有のマスターデータのためdependent: :destroyは付けない
+
   # 判定式末尾へポン付けする特殊トークンの種別。nil = 通常バフ。
   # DBには文字列で保存する(integer enumだと後から並べ替えるとズレる/管理人がDBを直接見て意味が分かる方が運用に向くため)
   enum :special_type, {
