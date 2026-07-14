@@ -1,3 +1,7 @@
+<% if preset_error.present? %>
+  <p class="text-red-600 text-xs py-1"><%= preset_error %></p>
+<% end %>
+
 <%= form_with url: character_buffs_path(character), scope: :buff, class: "flex items-center gap-2 mt-3" do |f| %>
   <%= f.select :buff_preset_id,
         options_from_collection_for_select(buff_presets, :id, :name),
