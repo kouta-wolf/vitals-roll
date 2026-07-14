@@ -17,6 +17,13 @@ class BuffsController < ApplicationController
   private
 
   def create_from_preset
+    if buff_params[:buff_preset_id].blank?
+      @buff = @character.buffs.new
+      @buff_presets = BuffPreset.all
+      @preset_error = "プリセットを選択してください"
+      return render :new, status: :unprocessable_entity
+    end
+
     buff_preset = BuffPreset.find(buff_params[:buff_preset_id])
     @buff = buff_preset.build_buff_for(@character)
 

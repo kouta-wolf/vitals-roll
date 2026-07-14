@@ -155,11 +155,16 @@ RSpec.describe "Buffs", type: :request do
       end
 
       context "プリセットが未選択（空文字）の場合" do
-        it "404になりバフが作成されない" do
+        it "バフが作成されずバリデーションエラーになる" do
           expect {
             post character_buffs_path(character), params: { buff: { buff_preset_id: "" } }
           }.not_to change(character.buffs, :count)
-          expect(response).to have_http_status(:not_found)
+          expect(response).to have_http_status(:unprocessable_entity)
+        end
+
+        it "エラーメッセージが表示される" do
+          post character_buffs_path(character), params: { buff: { buff_preset_id: "" } }
+          expect(response.body).to include("プリセットを選択してください")
         end
       end
 

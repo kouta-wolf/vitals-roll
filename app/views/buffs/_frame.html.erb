@@ -3,7 +3,7 @@
     <%= render character.buffs %>
   </div>
 
-  <%= render "buffs/form", character: character, buff_presets: buff_presets %>
+  <%= render "buffs/form", character: character, buff_presets: buff_presets, preset_error: local_assigns[:preset_error] %>
 
   <% if buff %>
     <%= render "buffs/manual_form", character: character, buff: buff %>
