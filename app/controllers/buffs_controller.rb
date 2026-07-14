@@ -8,15 +8,17 @@ class BuffsController < ApplicationController
 
   def create
     if buff_params.key?(:buff_preset_id)
-      create_from_preset
+      create_from_buff_preset
     else
-      create_manual
+      create_buff_manual
     end
   end
 
   private
 
-  def create_from_preset
+  def create_from_buff_preset
+    # 空文字のままBuffPreset.findに渡すとRecordNotFoundで404へ渡される。
+    # new.htmlと同じ表示にするため@buff/@buff_presetsもnewアクションと同様にセット。
     if buff_params[:buff_preset_id].blank?
       @buff = @character.buffs.new
       @buff_presets = BuffPreset.all
@@ -37,7 +39,7 @@ class BuffsController < ApplicationController
     end
   end
 
-  def create_manual
+  def create_buff_manual
     @buff = @character.buffs.new(manual_buff_params)
     @buff.active = true
     @buff.remaining_rounds = @buff.duration_rounds
