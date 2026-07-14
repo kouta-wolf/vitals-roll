@@ -1,1 +1,1 @@
-<%= turbo_stream.append dom_id(@character, :buffs), partial: "buffs/buff", locals: { buff: @buff } %>
+<%= turbo_stream.append dom_id(@character, :buffs_list), partial: "buffs/buff", locals: { buff: @buff } %>

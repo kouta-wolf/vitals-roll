@@ -1,0 +1,14 @@
+<%= turbo_frame_tag dom_id(character, :buffs) do %>
+  <div id="<%= dom_id(character, :buffs_list) %>" class="space-y-1 mt-3">
+    <%= render character.buffs %>
+  </div>
+
+  <%= render "buffs/form", character: character, buff_presets: buff_presets %>
+
+  <% if buff %>
+    <%= render "buffs/manual_form", character: character, buff: buff %>
+  <% else %>
+    <%= link_to "＋ バフを手動登録", new_character_buff_path(character),
+          class: "text-blue-600 hover:underline text-sm mt-2 inline-block" %>
+  <% end %>
+<% end %>
