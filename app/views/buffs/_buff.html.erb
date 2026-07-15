@@ -1,4 +1,10 @@
-<div id="<%= dom_id(buff) %>" class="flex items-center justify-between text-sm border-b border-gray-100 py-1">
-  <span><%= buff.display_name %></span>
-  <span class="text-gray-500">残り<%= buff.remaining_rounds.nil? ? "∞" : "#{buff.remaining_rounds}R" %></span>
-</div>
+<%= turbo_frame_tag dom_id(buff) do %>
+  <div class="flex items-center justify-between text-sm border-b border-gray-100 py-1">
+    <span><%= buff.display_name %></span>
+    <div class="flex items-center gap-2">
+      <span class="text-gray-500">残り<%= buff.remaining_rounds.nil? ? "∞" : "#{buff.remaining_rounds}R" %></span>
+      <%= link_to "編集", edit_character_buff_path(buff.character, buff),
+            class: "text-blue-600 hover:underline text-xs" %>
+    </div>
+  </div>
+<% end %>
