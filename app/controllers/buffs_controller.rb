@@ -19,9 +19,7 @@ class BuffsController < ApplicationController
   end
 
   def update
-    attrs = manual_buff_params.merge(remaining_rounds: manual_buff_params[:duration_rounds])
-
-    if @buff.update(attrs)
+    if @buff.update(resynced_attrs)
       redirect_to character_path(@character), notice: "バフを更新しました"
     else
       render :edit, status: :unprocessable_entity
@@ -80,5 +78,10 @@ class BuffsController < ApplicationController
 
   def manual_buff_params
     buff_params.except(:buff_preset_id)
+  end
+
+  # duration_rounds編集時は残りラウンドをリセットする仕様
+  def resynced_attrs
+    manual_buff_params.merge(remaining_rounds: manual_buff_params[:duration_rounds])
   end
 end
