@@ -3,6 +3,8 @@ class BuffsController < ApplicationController
   before_action :set_buff, only: [ :edit, :update ]
 
   def new
+    # @character.buffs.newだと未保存レコードがcharacter.buffsの内部配列に混入し、
+    # 同一リクエスト内でrender character.buffsした際に一覧へ紛れ込むため使わない
     @buff = Buff.new(character: @character)
     @buff_presets = BuffPreset.all
   end
@@ -32,7 +34,7 @@ class BuffsController < ApplicationController
     # 空文字のままBuffPreset.findに渡すとRecordNotFoundで404へ渡される。
     # new.htmlと同じ表示にするため@buff/@buff_presetsもnewアクションと同様にセット。
     if buff_params[:buff_preset_id].blank?
-      @buff = Buff.new(character: @character)
+      @buff = Buff.new(character: @character) # 理由はnewアクション参照
       @buff_presets = BuffPreset.all
       @preset_error = "プリセットを選択してください"
       return render :new, status: :unprocessable_entity
@@ -52,7 +54,7 @@ class BuffsController < ApplicationController
   end
 
   def create_buff_manual
-    @buff = Buff.new(manual_buff_params.merge(character: @character))
+    @buff = Buff.new(manual_buff_params.merge(character: @character)) # 理由はnewアクション参照
     @buff.active = true
     @buff.remaining_rounds = @buff.duration_rounds
 
