@@ -25,7 +25,8 @@ class BuffPreset < ApplicationRecord
 
   # 判定式計算に必要な数値だけをコピー(nameやspecial_typeはbuff_preset経由で参照するため含めない)
   def build_buff_for(character)
-    character.buffs.new(
+    Buff.new(
+      character: character,
       buff_preset: self,
       bonus_value: bonus_value,
       target_status: target_status,

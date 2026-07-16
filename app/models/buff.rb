@@ -14,7 +14,8 @@ class Buff < ApplicationRecord
   validates :target_status, presence: true, inclusion: { in: TARGET_STATUSES },
                              unless: -> { buff_preset&.special_type.present? }
 
+  # nameは通常カスタムバフのみ持つため、あればそちらを優先しプリセット名にフォールバックする
   def display_name
-    buff_preset&.name || name
+    name.presence || buff_preset&.name
   end
 end

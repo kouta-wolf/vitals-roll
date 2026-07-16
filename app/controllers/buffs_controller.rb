@@ -1,8 +1,11 @@
 class BuffsController < ApplicationController
   before_action :set_character
+  before_action :set_buff, only: [ :edit, :update ]
 
   def new
-    @buff = @character.buffs.new
+    # @character.buffs.newだと未保存レコードがcharacter.buffsの内部配列に混入し、
+    # 同一リクエスト内でrender character.buffsした際に一覧へ紛れ込むため使わない
+    @buff = Buff.new(character: @character)
     @buff_presets = BuffPreset.all
   end
 
@@ -14,13 +17,24 @@ class BuffsController < ApplicationController
     end
   end
 
+  def edit
+  end
+
+  def update
+    if @buff.update(resynced_attrs)
+      redirect_to character_path(@character), notice: "バフを更新しました"
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def create_from_buff_preset
     # 空文字のままBuffPreset.findに渡すとRecordNotFoundで404へ渡される。
     # new.htmlと同じ表示にするため@buff/@buff_presetsもnewアクションと同様にセット。
     if buff_params[:buff_preset_id].blank?
-      @buff = @character.buffs.new
+      @buff = Buff.new(character: @character) # 理由はnewアクション参照
       @buff_presets = BuffPreset.all
       @preset_error = "プリセットを選択してください"
       return render :new, status: :unprocessable_entity
@@ -40,7 +54,7 @@ class BuffsController < ApplicationController
   end
 
   def create_buff_manual
-    @buff = @character.buffs.new(manual_buff_params)
+    @buff = Buff.new(manual_buff_params.merge(character: @character)) # 理由はnewアクション参照
     @buff.active = true
     @buff.remaining_rounds = @buff.duration_rounds
 
@@ -56,11 +70,20 @@ class BuffsController < ApplicationController
     @character = current_user.characters.find(params[:character_id])
   end
 
+  def set_buff
+    @buff = @character.buffs.find(params[:id])
+  end
+
   def buff_params
     params.require(:buff).permit(:buff_preset_id, :name, :target_status, :bonus_value, :duration_rounds)
   end
 
   def manual_buff_params
     buff_params.except(:buff_preset_id)
+  end
+
+  # duration_rounds編集時は残りラウンドをリセットする仕様
+  def resynced_attrs
+    manual_buff_params.merge(remaining_rounds: manual_buff_params[:duration_rounds])
   end
 end

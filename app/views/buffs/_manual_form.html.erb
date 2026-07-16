@@ -2,15 +2,18 @@
   <p class="text-red-600 text-xs py-1"><%= buff.errors.full_messages.to_sentence %></p>
 <% end %>
 
-<%= form_with url: character_buffs_path(character), scope: :buff,
+<%= form_with model: [ character, buff ],
       class: "flex flex-wrap items-center gap-1 text-sm border-b border-gray-100 py-1" do |form| %>
 
   <div class="flex items-center gap-1 flex-1 min-w-32">
     <span class="text-xs text-gray-500 shrink-0">名前</span>
-    <%= form.text_field :name,
-          value: buff.name,
-          placeholder: "例: 陽光の魔符",
-          class: "flex-1 min-w-16 border rounded px-2 py-1 text-sm" %>
+    <% if buff.buff_preset.nil? %>
+      <%= form.text_field :name,
+            placeholder: "例: 陽光の魔符",
+            class: "flex-1 min-w-16 border rounded px-2 py-1 text-sm" %>
+    <% else %>
+      <span class="flex-1 min-w-16 text-sm"><%= buff.buff_preset.name %></span>
+    <% end %>
   </div>
 
   <div class="flex items-center gap-1">
@@ -24,19 +27,19 @@
   <div class="flex items-center gap-1">
     <span class="text-xs text-gray-500 shrink-0">補正値</span>
     <%= form.number_field :bonus_value,
-          min: -999, max: 999, value: buff.bonus_value,
+          min: -999, max: 999,
           class: "border rounded px-1 py-1 text-sm w-16" %>
   </div>
 
   <div class="flex items-center gap-1">
     <span class="text-xs text-gray-500 shrink-0">持続R</span>
     <%= form.number_field :duration_rounds,
-          min: 0, max: 50, value: buff.duration_rounds,
+          min: 0, max: 50,
           placeholder: "空欄で無期限",
           class: "border rounded px-1 py-1 text-sm w-16" %>
   </div>
 
-  <%= form.submit "登録", class: "bg-blue-600 hover:bg-blue-700 text-white text-xs px-2 py-1 rounded cursor-pointer" %>
+  <%= form.submit buff.persisted? ? "更新" : "登録", class: "bg-blue-600 hover:bg-blue-700 text-white text-xs px-2 py-1 rounded cursor-pointer" %>
   <%= link_to "キャンセル", character_path(character),
         class: "text-gray-500 hover:text-gray-700 text-xs px-1" %>
 <% end %>

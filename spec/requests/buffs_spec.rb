@@ -179,4 +179,145 @@ RSpec.describe "Buffs", type: :request do
       end
     end
   end
+
+  describe "GET /characters/:character_id/buffs/:id/edit" do
+    let(:user_character) { create(:character, user: user) }
+    let(:user_buff) { create(:buff, character: user_character, name: "陽光の魔符") }
+
+    context "未ログインの場合" do
+      it "ログインページにリダイレクトされる" do
+        get edit_character_buff_path(user_character, user_buff)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "ログイン済の場合" do
+      before { sign_in user }
+
+      it "正常なステータスコードが返る" do
+        get edit_character_buff_path(user_character, user_buff)
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "正常に内容が表示される" do
+        get edit_character_buff_path(user_character, user_buff)
+        expect(response.body).to include("陽光の魔符")
+      end
+
+      it "他ユーザーのキャラクターの場合404になる" do
+        other_character = create(:character, user: create(:user))
+        other_buff = create(:buff, character: other_character)
+        get edit_character_buff_path(other_character, other_buff)
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it "自分の別キャラクターに紐づくバフIDを指定した場合404になる" do
+        another_character = create(:character, user: user)
+        get edit_character_buff_path(another_character, user_buff)
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe "PATCH /characters/:character_id/buffs/:id" do
+    let(:character) { create(:character, user: user) }
+    let(:buff) { create(:buff, character: character, name: "陽光の魔符", bonus_value: 3, duration_rounds: 5) }
+    let(:valid_params) do
+      { buff: { name: "陽光の魔符（強）", target_status: "dexterity", bonus_value: 10, duration_rounds: 3 } }
+    end
+    let(:invalid_params) do
+      { buff: { name: "", target_status: "dexterity", bonus_value: 10, duration_rounds: 3 } }
+    end
+
+    context "未ログインの場合" do
+      it "ログインページにリダイレクトされる" do
+        patch character_buff_path(character, buff), params: valid_params
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "ログイン済の場合" do
+      before { sign_in user }
+
+      context "有効なパラメータの場合" do
+        it "有効なパラメータで更新される" do
+          patch character_buff_path(character, buff), params: valid_params
+          expect(response).to have_http_status(:found)
+        end
+
+        it "バフの内容が更新される" do
+          expect {
+            patch character_buff_path(character, buff), params: valid_params
+          }.to change { buff.reload.name }.to("陽光の魔符（強）")
+        end
+
+        it "更新後メッセージが表示される" do
+          patch character_buff_path(character, buff), params: valid_params
+          expect(flash[:notice]).to eq("バフを更新しました")
+        end
+
+        it "更新後キャラクター詳細ページにリダイレクトされる" do
+          patch character_buff_path(character, buff), params: valid_params
+          expect(response).to redirect_to(character_path(character))
+        end
+
+        it "duration_roundsの変更に合わせてremaining_roundsも再同期される" do
+          buff.update!(remaining_rounds: 1)
+          patch character_buff_path(character, buff), params: valid_params
+          expect(buff.reload.remaining_rounds).to eq(3)
+        end
+      end
+
+      context "プリセット由来バフの場合" do
+        let(:buff_preset) { create(:buff_preset, name: "マッスルベアー", target_status: "strength", bonus_value: 12) }
+        let(:preset_buff) { create(:buff, :from_preset, character: character, buff_preset: buff_preset, bonus_value: 12) }
+        let(:preset_valid_params) do
+          { buff: { target_status: "strength", bonus_value: 20, duration_rounds: 3 } }
+        end
+
+        it "nameパラメータがなくてもbuff_presetの名前で表示され続ける" do
+          patch character_buff_path(character, preset_buff), params: preset_valid_params
+          expect(preset_buff.reload.display_name).to eq("マッスルベアー")
+        end
+
+        it "name以外の項目は更新される" do
+          patch character_buff_path(character, preset_buff), params: preset_valid_params
+          expect(preset_buff.reload.bonus_value).to eq(20)
+        end
+      end
+
+      context "無効なパラメータの場合（名前が空欄）" do
+        it "無効なパラメータで更新されない" do
+          patch character_buff_path(character, buff), params: invalid_params
+          expect(response).to have_http_status(:unprocessable_entity)
+        end
+
+        it "更新できない場合エラーメッセージが表示される" do
+          patch character_buff_path(character, buff), params: invalid_params
+          expect(response.body).to include("Name can&#39;t be blank")
+        end
+
+        it "更新出来ない場合、DBの値が変わっていない" do
+          expect {
+            patch character_buff_path(character, buff), params: invalid_params
+          }.not_to change { buff.reload.name }
+        end
+      end
+
+      context "認可チェック" do
+        it "他のユーザーのバフを編集できない" do
+          other_character = create(:character, user: create(:user))
+          other_buff = create(:buff, character: other_character)
+          patch character_buff_path(other_character, other_buff), params: valid_params
+          expect(response).to have_http_status(:not_found)
+        end
+
+        it "自分の別キャラクターに紐づくバフIDを指定した場合編集できない" do
+          another_character = create(:character, user: user)
+          patch character_buff_path(another_character, buff), params: valid_params
+          expect(response).to have_http_status(:not_found)
+        end
+      end
+    end
+  end
 end
