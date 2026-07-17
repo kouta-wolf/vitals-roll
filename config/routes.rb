@@ -4,7 +4,7 @@ Rails.application.routes.draw do
 
   resources :characters do
     resources :weapons, only: [ :new, :create, :edit, :update, :destroy ]
-    resources :buffs, only: [ :new, :create, :edit, :update ]
+    resources :buffs, only: [ :new, :create, :edit, :update, :destroy ]
   end
 
   # 静的ページ

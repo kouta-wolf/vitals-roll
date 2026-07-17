@@ -320,4 +320,65 @@ RSpec.describe "Buffs", type: :request do
       end
     end
   end
+
+  describe "DELETE /characters/:character_id/buffs/:id" do
+    let(:character) { create(:character, user: user) }
+    let!(:buff) { create(:buff, character: character) }
+
+    context "未ログインの場合" do
+      it "ログインページにリダイレクトされる" do
+        delete character_buff_path(character, buff)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "ログイン済の場合" do
+      before { sign_in user }
+
+      it "削除に成功する" do
+        delete character_buff_path(character, buff)
+        expect(response).to have_http_status(:found)
+      end
+
+      it "バフが削除される" do
+        expect { delete character_buff_path(character, buff) }.to change(Buff, :count).by(-1)
+      end
+
+      it "キャラクター詳細ページにリダイレクトされる" do
+        delete character_buff_path(character, buff)
+        expect(response).to redirect_to(character_path(character))
+      end
+
+      it "削除後メッセージが表示される" do
+        delete character_buff_path(character, buff)
+        expect(flash[:notice]).to eq("バフを削除しました")
+      end
+
+      context "認可チェック" do
+        it "存在しないバフidを指定した場合404になり削除されない" do
+          expect {
+            delete character_buff_path(character, id: -1)
+          }.not_to change(Buff, :count)
+          expect(response).to have_http_status(:not_found)
+        end
+
+        it "他ユーザーのキャラクターのバフを削除できない" do
+          other_character = create(:character, user: create(:user))
+          other_buff = create(:buff, character: other_character)
+          expect {
+            delete character_buff_path(other_character, other_buff)
+          }.not_to change(Buff, :count)
+          expect(response).to have_http_status(:not_found)
+        end
+
+        it "自分の別キャラクターに紐づくバフIDを指定した場合削除できない" do
+          another_character = create(:character, user: user)
+          expect {
+            delete character_buff_path(another_character, buff)
+          }.not_to change(Buff, :count)
+          expect(response).to have_http_status(:not_found)
+        end
+      end
+    end
+  end
 end
