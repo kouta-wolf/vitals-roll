@@ -1,6 +1,6 @@
 class BuffsController < ApplicationController
   before_action :set_character
-  before_action :set_buff, only: [ :edit, :update ]
+  before_action :set_buff, only: [ :edit, :update, :destroy ]
 
   def new
     # @character.buffs.newだと未保存レコードがcharacter.buffsの内部配列に混入し、
@@ -26,6 +26,11 @@ class BuffsController < ApplicationController
     else
       render :edit, status: :unprocessable_entity
     end
+  end
+
+  def destroy
+    @buff.destroy
+    redirect_to character_path(@character), notice: "バフを削除しました"
   end
 
   private
