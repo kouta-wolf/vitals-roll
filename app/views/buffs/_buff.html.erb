@@ -1,13 +1,32 @@
 <%= turbo_frame_tag dom_id(buff) do %>
-  <div class="flex items-center justify-between text-sm border-b border-gray-100 py-1">
-    <span><%= buff.display_name %></span>
+  <div
+    class="
+      flex items-center justify-between text-sm border-b border-gray-100 py-1
+      <%= "opacity-50" unless buff.active? %>
+    "
+  >
+    <div class="flex items-center gap-2">
+      <%= form_with url: toggle_character_buff_path(buff.character, buff), method: :patch do |f| %>
+        <%= f.check_box :active,
+                    checked: buff.active?,
+                    onchange: "this.form.requestSubmit()" %>
+      <% end %>
+      <span><%= buff.display_name %></span>
+    </div>
     <div class="flex items-center gap-2">
       <span class="text-gray-500">残り<%= buff.remaining_rounds.nil? ? "∞" : "#{buff.remaining_rounds}R" %></span>
-      <%= link_to "編集", edit_character_buff_path(buff.character, buff),
-            class: "text-blue-600 hover:underline text-xs" %>
-      <%= button_to "削除", character_buff_path(buff.character, buff), method: :delete,
-            data: { turbo_method: :delete, turbo_confirm: "本当に削除しますか？", turbo_frame: "_top" },
-            class: "text-red-600 hover:underline text-xs bg-transparent p-0 border-0" %>
+      <%= link_to "編集",
+      edit_character_buff_path(buff.character, buff),
+      class: "text-blue-600 hover:underline text-xs" %>
+      <%= button_to "削除",
+      character_buff_path(buff.character, buff),
+      method: :delete,
+      data: {
+        turbo_method: :delete,
+        turbo_confirm: "本当に削除しますか？",
+        turbo_frame: "_top",
+      },
+      class: "text-red-600 hover:underline text-xs bg-transparent p-0 border-0" %>
     </div>
   </div>
 <% end %>

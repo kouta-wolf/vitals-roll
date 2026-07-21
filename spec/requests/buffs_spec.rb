@@ -381,4 +381,61 @@ RSpec.describe "Buffs", type: :request do
       end
     end
   end
+
+  describe "PATCH /characters/:character_id/buffs/:id/toggle" do
+    let(:character) { create(:character, user: user) }
+    let!(:buff) { create(:buff, character: character, active: true) }
+
+    context "未ログインの場合" do
+      it "ログインページにリダイレクトされる" do
+        patch toggle_character_buff_path(character, buff)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "ログイン済みの場合" do
+      before { sign_in user }
+
+      it "該当バフのactiveがtrueからfalseに反転する" do
+        expect {
+          patch toggle_character_buff_path(character, buff)
+        }.to change { buff.reload.active }.from(true).to(false)
+      end
+
+      it "再度リクエストするとfalseからtrueに戻る" do
+        buff.update!(active: false)
+        expect {
+          patch toggle_character_buff_path(character, buff)
+        }.to change { buff.reload.active }.from(false).to(true)
+      end
+
+      it "プリセットコピーされたバフを切り替えてもプリセット本体は変更されない" do
+        preset_buff = create(:buff, :from_preset, character: character, buff_preset: buff_preset)
+        expect {
+          patch toggle_character_buff_path(character, preset_buff)
+        }.not_to change { buff_preset.reload.updated_at }
+      end
+    end
+
+    context "認可チェック" do
+      before { sign_in user }
+
+      it "自分の別キャラクターに紐づくバフIDを指定した場合404になりactiveが変わらない" do
+        another_character = create(:character, user: user)
+        expect {
+          patch toggle_character_buff_path(another_character, buff)
+        }.not_to change { buff.reload.active }
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it "他ユーザーのキャラクターのバフを切り替えられない" do
+        other_character = create(:character, user: create(:user))
+        other_buff = create(:buff, character: other_character, active: true)
+        expect {
+          patch toggle_character_buff_path(other_character, other_buff)
+        }.not_to change { other_buff.reload.active }
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
 end
