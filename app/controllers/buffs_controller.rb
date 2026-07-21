@@ -1,6 +1,6 @@
 class BuffsController < ApplicationController
   before_action :set_character
-  before_action :set_buff, only: [ :edit, :update, :destroy ]
+  before_action :set_buff, only: [ :edit, :update, :destroy, :toggle ]
 
   def new
     # @character.buffs.newだと未保存レコードがcharacter.buffsの内部配列に混入し、
@@ -31,6 +31,10 @@ class BuffsController < ApplicationController
   def destroy
     @buff.destroy
     redirect_to character_path(@character), notice: "バフを削除しました"
+  end
+
+  def toggle
+    @buff.toggle!(:active)
   end
 
   private
