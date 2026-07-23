@@ -1,7 +1,5 @@
 <%= turbo_frame_tag dom_id(character, :buffs) do %>
-  <div id="<%= dom_id(character, :buffs_list) %>" class="space-y-1 mt-3">
-    <%= render character.buffs %>
-  </div>
+  <%= render "buffs/list", character: character %>
 
   <%= render "buffs/form", character: character, buff_presets: buff_presets, preset_error: local_assigns[:preset_error] %>
 
