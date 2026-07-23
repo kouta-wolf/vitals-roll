@@ -308,4 +308,93 @@ RSpec.describe "Characters", type: :request do
       end
     end
   end
+
+  describe "PATCH /characters/:id/advance_round" do
+    let(:user_character) { create(:character, user: user, current_rounds: 2) }
+
+    context "未ログインの場合" do
+      it "ログインページにリダイレクトされる" do
+        patch advance_round_character_path(user_character)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "ログイン済みの場合" do
+      before { sign_in user }
+
+      it "current_roundsが1増える" do
+        expect {
+          patch advance_round_character_path(user_character)
+        }.to change { user_character.reload.current_rounds }.from(2).to(3)
+      end
+    end
+
+    context "認可チェック" do
+      before { sign_in user }
+
+      it "自分の別キャラクターのcurrent_roundsは変わらない" do
+        another_character = create(:character, user: user, current_rounds: 2)
+        expect {
+          patch advance_round_character_path(user_character)
+        }.not_to change { another_character.reload.current_rounds }
+      end
+
+      it "他ユーザーのキャラクターの場合404になりcurrent_roundsが変わらない" do
+        other_user = create(:user)
+        other_character = create(:character, user: other_user, current_rounds: 2)
+        expect {
+          patch advance_round_character_path(other_character)
+        }.not_to change { other_character.reload.current_rounds }
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe "PATCH /characters/:id/retreat_round" do
+    let(:user_character) { create(:character, user: user, current_rounds: 2) }
+
+    context "未ログインの場合" do
+      it "ログインページにリダイレクトされる" do
+        patch retreat_round_character_path(user_character)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "ログイン済みの場合" do
+      before { sign_in user }
+
+      it "current_roundsが1減る" do
+        expect {
+          patch retreat_round_character_path(user_character)
+        }.to change { user_character.reload.current_rounds }.from(2).to(1)
+      end
+
+      it "current_roundsが0のときは0未満にならない" do
+        zero_round_character = create(:character, user: user, current_rounds: 0)
+        expect {
+          patch retreat_round_character_path(zero_round_character)
+        }.not_to change { zero_round_character.reload.current_rounds }
+      end
+    end
+
+    context "認可チェック" do
+      before { sign_in user }
+
+      it "自分の別キャラクターのcurrent_roundsは変わらない" do
+        another_character = create(:character, user: user, current_rounds: 2)
+        expect {
+          patch retreat_round_character_path(user_character)
+        }.not_to change { another_character.reload.current_rounds }
+      end
+
+      it "他ユーザーのキャラクターの場合404になりcurrent_roundsが変わらない" do
+        other_user = create(:user)
+        other_character = create(:character, user: other_user, current_rounds: 2)
+        expect {
+          patch retreat_round_character_path(other_character)
+        }.not_to change { other_character.reload.current_rounds }
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
 end
