@@ -151,4 +151,35 @@ RSpec.describe Buff, type: :model do
       expect(buff.display_name).to eq("プリセットバフ")
     end
   end
+
+  describe "#toggle_active!" do
+    it "activeなバフはfalseに反転するか" do
+      buff = create(:buff, active: true, duration_rounds: 3, remaining_rounds: 2)
+      expect { buff.toggle_active! }.to change { buff.reload.active }.from(true).to(false)
+    end
+
+    it "持続切れ(remaining_rounds: 0)ではないバフはremaining_roundsを変えずにtrueに戻るか" do
+      buff = create(:buff, active: false, duration_rounds: 3, remaining_rounds: 2)
+      buff.toggle_active!
+      buff.reload
+      expect(buff.active).to be true
+      expect(buff.remaining_rounds).to eq(2)
+    end
+
+    it "持続切れ(remaining_rounds: 0)のバフはremaining_roundsをduration_roundsまで戻してtrueになるか" do
+      buff = create(:buff, active: false, duration_rounds: 3, remaining_rounds: 0)
+      buff.toggle_active!
+      buff.reload
+      expect(buff.active).to be true
+      expect(buff.remaining_rounds).to eq(3)
+    end
+
+    it "無限持続(remaining_rounds: nil)のバフはremaining_roundsを変えずにtrueに戻るか" do
+      buff = create(:buff, active: false, duration_rounds: nil, remaining_rounds: nil)
+      buff.toggle_active!
+      buff.reload
+      expect(buff.active).to be true
+      expect(buff.remaining_rounds).to be_nil
+    end
+  end
 end

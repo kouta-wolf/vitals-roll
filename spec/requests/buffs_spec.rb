@@ -415,6 +415,25 @@ RSpec.describe "Buffs", type: :request do
           patch toggle_character_buff_path(character, preset_buff)
         }.not_to change { buff_preset.reload.updated_at }
       end
+
+      it "持続切れ(remaining_rounds: 0)のバフを再度onにするとremaining_roundsがduration_roundsまで戻る" do
+        expired_buff = create(:buff, character: character, active: false, duration_rounds: 3, remaining_rounds: 0)
+        patch toggle_character_buff_path(character, expired_buff)
+        expired_buff.reload
+        expect(expired_buff.active).to be true
+        expect(expired_buff.remaining_rounds).to eq(3)
+      end
+
+      it "turbo_stream形式でリクエストすると200が返る" do
+        patch toggle_character_buff_path(character, buff), as: :turbo_stream
+        expect(response.media_type).to eq(Mime[:turbo_stream])
+      end
+
+      it "持続切れのバフを再度onにするとturbo_stream上のremaining_rounds表示も更新される" do
+        expired_buff = create(:buff, character: character, active: false, duration_rounds: 3, remaining_rounds: 0)
+        patch toggle_character_buff_path(character, expired_buff), as: :turbo_stream
+        expect(response.body).to include("残り3R")
+      end
     end
 
     context "認可チェック" do
