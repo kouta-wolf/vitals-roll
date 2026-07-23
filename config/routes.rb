@@ -9,6 +9,11 @@ Rails.application.routes.draw do
         patch :toggle
       end
     end
+
+    member do
+      patch :advance_round
+      patch :retreat_round
+    end
   end
 
   # 静的ページ

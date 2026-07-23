@@ -1,0 +1,8 @@
+<div id="<%= dom_id(character, :round) %>" class="flex items-center gap-4">
+  <p class="text-lg">現在のラウンド: <span class="font-bold"><%= character.current_rounds %></span></p>
+
+  <%= button_to "戻す", retreat_round_character_path(character), method: :patch,
+        class: "inline-flex h-8 items-center rounded-md bg-gray-200 hover:bg-gray-300 px-3 text-sm transition active:scale-95 hover:cursor-pointer" %>
+  <%= button_to "進める", advance_round_character_path(character), method: :patch,
+        class: "inline-flex h-8 items-center rounded-md bg-blue-600 hover:bg-blue-700 px-3 text-sm text-white transition active:scale-95 hover:cursor-pointer" %>
+</div>

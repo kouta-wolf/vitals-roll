@@ -1,4 +1,6 @@
 class CharactersController < ApplicationController
+  before_action :set_character, only: [ :show, :edit, :update, :destroy, :advance_round, :retreat_round ]
+
   def index
     @characters = current_user.characters.order(updated_at: :desc).page(params[:page]).per(8)
   end
@@ -17,16 +19,13 @@ class CharactersController < ApplicationController
   end
 
   def show
-    @character = current_user.characters.find(params[:id])
     @buff_presets = BuffPreset.all
   end
 
   def edit
-    @character = current_user.characters.find(params[:id])
   end
 
   def update
-    @character = current_user.characters.find(params[:id])
     if @character.update(character_params)
       redirect_to @character, notice: "キャラクターを更新しました"
     else
@@ -35,14 +34,35 @@ class CharactersController < ApplicationController
   end
 
   def destroy
-    @character = current_user.characters.find(params[:id])
     @character.destroy
     redirect_to characters_path, notice: "キャラクターを削除しました"
+  end
+
+  def advance_round
+    @character.advance_round!
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to @character }
+    end
+  end
+
+  def retreat_round
+    @character.retreat_round!
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to @character }
+    end
   end
 
   private
 
   def character_params
     params.require(:character).permit(:name, :race, :main_class, :main_class_level, :dexterity, :agility, :strength, :vitality, :intelligence, :spirit, :defense, :current_rounds)
+  end
+
+  def set_character
+    @character = current_user.characters.find(params[:id])
   end
 end
