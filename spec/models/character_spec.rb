@@ -120,4 +120,39 @@ RSpec.describe Character, type: :model do
       expect(other_buff.reload.remaining_rounds).to eq(1)
     end
   end
+
+  describe "#reset_round!" do
+    let(:character) { create(:character, current_rounds: 5) }
+
+    it "current_roundsが0に戻るか" do
+      expect { character.reset_round! }.to change { character.reload.current_rounds }.from(5).to(0)
+    end
+
+    it "持続バフ（duration_roundsあり）のremaining_roundsがduration_roundsに戻るか" do
+      buff = create(:buff, character: character, active: true, duration_rounds: 3, remaining_rounds: 1)
+      character.reset_round!
+      expect(buff.reload.remaining_rounds).to eq(3)
+    end
+
+    it "持続バフ（duration_roundsあり）がactive: falseになるか" do
+      buff = create(:buff, character: character, active: true, duration_rounds: 3, remaining_rounds: 1)
+      character.reset_round!
+      expect(buff.reload.active).to be false
+    end
+
+    it "無限バフ（duration_roundsがnil）は変化しないか" do
+      buff = create(:buff, character: character, active: true, duration_rounds: nil, remaining_rounds: nil)
+      character.reset_round!
+      buff.reload
+      expect(buff.remaining_rounds).to be_nil
+      expect(buff.active).to be true
+    end
+
+    it "他キャラクターのバフには影響しないか" do
+      other_character = create(:character)
+      other_buff = create(:buff, character: other_character, active: true, duration_rounds: 3, remaining_rounds: 1)
+      character.reset_round!
+      expect(other_buff.reload.remaining_rounds).to eq(1)
+    end
+  end
 end
