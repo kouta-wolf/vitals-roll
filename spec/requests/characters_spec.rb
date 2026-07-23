@@ -327,6 +327,30 @@ RSpec.describe "Characters", type: :request do
           patch advance_round_character_path(user_character)
         }.to change { user_character.reload.current_rounds }.from(2).to(3)
       end
+
+      it "activeなバフのremaining_roundsが1減る" do
+        buff = create(:buff, character: user_character, active: true, duration_rounds: 3, remaining_rounds: 3)
+        patch advance_round_character_path(user_character)
+        expect(buff.reload.remaining_rounds).to eq(2)
+      end
+
+      it "remaining_roundsが0になったバフはactive: falseになる" do
+        buff = create(:buff, character: user_character, active: true, duration_rounds: 3, remaining_rounds: 1)
+        patch advance_round_character_path(user_character)
+        expect(buff.reload.active).to be false
+      end
+
+      it "turbo_stream形式でリクエストすると200が返る" do
+        patch advance_round_character_path(user_character), as: :turbo_stream
+        expect(response).to have_http_status(200)
+        expect(response.media_type).to eq(Mime[:turbo_stream])
+      end
+
+      it "turbo_stream形式でリクエストするとバフ一覧の残りラウンドが更新される" do
+        create(:buff, character: user_character, active: true, name: "テストバフ", duration_rounds: 3, remaining_rounds: 3)
+        patch advance_round_character_path(user_character), as: :turbo_stream
+        expect(response.body).to include("残り2R")
+      end
     end
 
     context "認可チェック" do
@@ -374,6 +398,30 @@ RSpec.describe "Characters", type: :request do
         expect {
           patch retreat_round_character_path(zero_round_character)
         }.not_to change { zero_round_character.reload.current_rounds }
+      end
+
+      it "activeなバフのremaining_roundsが1増える" do
+        buff = create(:buff, character: user_character, active: true, duration_rounds: 3, remaining_rounds: 1)
+        patch retreat_round_character_path(user_character)
+        expect(buff.reload.remaining_rounds).to eq(2)
+      end
+
+      it "remaining_roundsがduration_roundsに達していればそれ以上増えない" do
+        buff = create(:buff, character: user_character, active: true, duration_rounds: 3, remaining_rounds: 3)
+        patch retreat_round_character_path(user_character)
+        expect(buff.reload.remaining_rounds).to eq(3)
+      end
+
+      it "turbo_stream形式でリクエストすると200が返る" do
+        patch retreat_round_character_path(user_character), as: :turbo_stream
+        expect(response).to have_http_status(200)
+        expect(response.media_type).to eq(Mime[:turbo_stream])
+      end
+
+      it "turbo_stream形式でリクエストするとバフ一覧の残りラウンドが更新される" do
+        create(:buff, character: user_character, active: true, name: "テストバフ", duration_rounds: 3, remaining_rounds: 1)
+        patch retreat_round_character_path(user_character), as: :turbo_stream
+        expect(response.body).to include("残り2R")
       end
     end
 

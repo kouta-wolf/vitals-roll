@@ -9,11 +9,20 @@ class Character < ApplicationRecord
 
   def advance_round!
     increment!(:current_rounds)
+    active_timed_buffs.each { |buff| buff.decrement_remaining_round! }
   end
 
   def retreat_round!
     return if current_rounds <= 0
 
     decrement!(:current_rounds)
+    active_timed_buffs.each { |buff| buff.increment_remaining_round! }
+  end
+
+  private
+
+  # 無限持続(remaining_rounds: nil)を除いた、増減対象のactiveなバフ
+  def active_timed_buffs
+    buffs.where(active: true).where.not(remaining_rounds: nil)
   end
 end
