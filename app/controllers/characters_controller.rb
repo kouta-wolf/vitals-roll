@@ -1,5 +1,5 @@
 class CharactersController < ApplicationController
-  before_action :set_character, only: [ :show, :edit, :update, :destroy, :advance_round, :retreat_round ]
+  before_action :set_character, only: [ :show, :edit, :update, :destroy, :advance_round, :retreat_round, :reset_round ]
 
   def index
     @characters = current_user.characters.order(updated_at: :desc).page(params[:page]).per(8)
@@ -53,6 +53,15 @@ class CharactersController < ApplicationController
     respond_to do |format|
       format.turbo_stream
       format.html { redirect_to @character }
+    end
+  end
+
+  def reset_round
+    @character.reset_round!
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to @character, notice: "ラウンドをリセットしました" }
     end
   end
 

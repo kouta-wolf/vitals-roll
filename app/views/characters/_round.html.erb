@@ -5,4 +5,7 @@
         class: "inline-flex h-8 items-center rounded-md bg-gray-200 hover:bg-gray-300 px-3 text-sm transition active:scale-95 hover:cursor-pointer" %>
   <%= button_to "進める", advance_round_character_path(character), method: :patch,
         class: "inline-flex h-8 items-center rounded-md bg-blue-600 hover:bg-blue-700 px-3 text-sm text-white transition active:scale-95 hover:cursor-pointer" %>
+  <%= button_to "リセット", reset_round_character_path(character), method: :patch,
+        data: { turbo_confirm: "ラウンドをリセットしますか？（無限バフ以外の持続ラウンドも初期値に戻ります）" },
+        class: "inline-flex h-8 items-center rounded-md bg-red-600 hover:bg-red-700 px-3 text-sm text-white transition active:scale-95 hover:cursor-pointer" %>
 </div>
