@@ -52,4 +52,72 @@ RSpec.describe Character, type: :model do
       expect(character.errors[:dexterity]).to be_present
     end
   end
+
+  describe "#advance_round!" do
+    let(:character) { create(:character, current_rounds: 0) }
+
+    it "activeなバフのremaining_roundsが1減る" do
+      buff = create(:buff, character: character, active: true, duration_rounds: 3, remaining_rounds: 3)
+      expect { character.advance_round! }.to change { buff.reload.remaining_rounds }.from(3).to(2)
+    end
+
+    it "remaining_roundsが1のバフは次のターンで0になりactiveもfalseになる" do
+      buff = create(:buff, character: character, active: true, duration_rounds: 3, remaining_rounds: 1)
+      character.advance_round!
+      buff.reload
+      expect(buff.remaining_rounds).to eq(0)
+      expect(buff.active).to be false
+    end
+
+    it "duration_roundsがnilの無限バフは変化しないか" do
+      buff = create(:buff, character: character, active: true, duration_rounds: nil, remaining_rounds: nil)
+      expect { character.advance_round! }.not_to change { buff.reload.remaining_rounds }
+    end
+
+    it "activeがfalseのバフは対象外で変化しないか" do
+      buff = create(:buff, character: character, active: false, duration_rounds: 3, remaining_rounds: 3)
+      expect { character.advance_round! }.not_to change { buff.reload.remaining_rounds }
+    end
+
+    it "他キャラクターのバフには影響しないか" do
+      other_character = create(:character)
+      other_buff = create(:buff, character: other_character, active: true, duration_rounds: 3, remaining_rounds: 3)
+      character.advance_round!
+      expect(other_buff.reload.remaining_rounds).to eq(3)
+    end
+  end
+
+  describe "#retreat_round!" do
+    let(:character) { create(:character, current_rounds: 2) }
+
+    it "activeなバフのremaining_roundsが1増えるか" do
+      buff = create(:buff, character: character, active: true, duration_rounds: 3, remaining_rounds: 1)
+      expect { character.retreat_round! }.to change { buff.reload.remaining_rounds }.from(1).to(2)
+    end
+
+    it "remaining_roundsがduration_roundsに達していればそれ以上増えないか" do
+      buff = create(:buff, character: character, active: true, duration_rounds: 3, remaining_rounds: 3)
+      expect { character.retreat_round! }.not_to change { buff.reload.remaining_rounds }
+    end
+
+    it "duration_roundsがnilの無限バフは変化しないか" do
+      buff = create(:buff, character: character, active: true, duration_rounds: nil, remaining_rounds: nil)
+      expect { character.retreat_round! }.not_to change { buff.reload.remaining_rounds }
+    end
+
+    it "active: false（バフが切れた）は対象外として変化しないか" do
+      buff = create(:buff, character: character, active: false, duration_rounds: 3, remaining_rounds: 0)
+      character.retreat_round!
+      buff.reload
+      expect(buff.remaining_rounds).to eq(0)
+      expect(buff.active).to be false
+    end
+
+    it "他キャラクターのバフには影響しないか" do
+      other_character = create(:character)
+      other_buff = create(:buff, character: other_character, active: true, duration_rounds: 3, remaining_rounds: 1)
+      character.retreat_round!
+      expect(other_buff.reload.remaining_rounds).to eq(1)
+    end
+  end
 end
