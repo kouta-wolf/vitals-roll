@@ -342,6 +342,7 @@ RSpec.describe "Characters", type: :request do
 
       it "turbo_stream形式でリクエストすると200が返る" do
         patch advance_round_character_path(user_character), as: :turbo_stream
+        expect(response).to have_http_status(200)
         expect(response.media_type).to eq(Mime[:turbo_stream])
       end
 
@@ -413,6 +414,7 @@ RSpec.describe "Characters", type: :request do
 
       it "turbo_stream形式でリクエストすると200が返る" do
         patch retreat_round_character_path(user_character), as: :turbo_stream
+        expect(response).to have_http_status(200)
         expect(response.media_type).to eq(Mime[:turbo_stream])
       end
 

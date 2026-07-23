@@ -426,6 +426,7 @@ RSpec.describe "Buffs", type: :request do
 
       it "turbo_stream形式でリクエストすると200が返る" do
         patch toggle_character_buff_path(character, buff), as: :turbo_stream
+        expect(response).to have_http_status(200)
         expect(response.media_type).to eq(Mime[:turbo_stream])
       end
 
