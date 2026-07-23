@@ -445,4 +445,82 @@ RSpec.describe "Characters", type: :request do
       end
     end
   end
+
+  describe "PATCH /characters/:id/reset_round" do
+    let(:user_character) { create(:character, user: user, current_rounds: 5) }
+
+    context "未ログインの場合" do
+      it "ログインページにリダイレクトされる" do
+        patch reset_round_character_path(user_character)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "ログイン済みの場合" do
+      before { sign_in user }
+
+      it "current_roundsが0に戻る" do
+        expect {
+          patch reset_round_character_path(user_character)
+        }.to change { user_character.reload.current_rounds }.from(5).to(0)
+      end
+
+      it "持続バフのremaining_roundsがduration_roundsに戻る" do
+        buff = create(:buff, character: user_character, active: true, duration_rounds: 3, remaining_rounds: 1)
+        patch reset_round_character_path(user_character)
+        expect(buff.reload.remaining_rounds).to eq(3)
+      end
+
+      it "持続バフがactive: falseになる" do
+        buff = create(:buff, character: user_character, active: true, duration_rounds: 3, remaining_rounds: 1)
+        patch reset_round_character_path(user_character)
+        expect(buff.reload.active).to be false
+      end
+
+      it "無限バフは変化しない" do
+        buff = create(:buff, character: user_character, active: true, duration_rounds: nil, remaining_rounds: nil)
+        patch reset_round_character_path(user_character)
+        buff.reload
+        expect(buff.active).to be true
+        expect(buff.remaining_rounds).to be_nil
+      end
+
+      it "リセット後詳細ページへリダイレクトされる" do
+        patch reset_round_character_path(user_character)
+        expect(response).to redirect_to(character_path(user_character))
+      end
+
+      it "リセットしたことを明示するメッセージが表示される" do
+        patch reset_round_character_path(user_character)
+        expect(flash[:notice]).to eq("ラウンドをリセットしました")
+      end
+    end
+
+    context "認可チェック" do
+      before { sign_in user }
+
+      it "自分の別キャラクターのcurrent_roundsは変わらない" do
+        another_character = create(:character, user: user, current_rounds: 5)
+        expect {
+          patch reset_round_character_path(user_character)
+        }.not_to change { another_character.reload.current_rounds }
+      end
+
+      it "自分の別キャラクターのバフは変わらない" do
+        another_character = create(:character, user: user, current_rounds: 5)
+        another_buff = create(:buff, character: another_character, active: true, duration_rounds: 3, remaining_rounds: 1)
+        patch reset_round_character_path(user_character)
+        expect(another_buff.reload.remaining_rounds).to eq(1)
+      end
+
+      it "他ユーザーのキャラクターの場合404になりcurrent_roundsが変わらない" do
+        other_user = create(:user)
+        other_character = create(:character, user: other_user, current_rounds: 5)
+        expect {
+          patch reset_round_character_path(other_character)
+        }.not_to change { other_character.reload.current_rounds }
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
 end

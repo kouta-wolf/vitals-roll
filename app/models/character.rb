@@ -19,6 +19,13 @@ class Character < ApplicationRecord
     active_timed_buffs.each { |buff| buff.increment_remaining_round! }
   end
 
+  def reset_round!
+    update!(current_rounds: 0)
+    buffs.where.not(duration_rounds: nil).find_each do |buff|
+      buff.update!(active: false, remaining_rounds: buff.duration_rounds)
+    end
+  end
+
   private
 
   # 無限持続(remaining_rounds: nil)を除いた、増減対象のactiveなバフ

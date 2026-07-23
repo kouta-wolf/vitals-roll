@@ -13,6 +13,7 @@ Rails.application.routes.draw do
     member do
       patch :advance_round
       patch :retreat_round
+      patch :reset_round
     end
   end
 
