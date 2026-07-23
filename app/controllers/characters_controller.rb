@@ -40,10 +40,20 @@ class CharactersController < ApplicationController
 
   def advance_round
     @character.advance_round!
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to @character }
+    end
   end
 
   def retreat_round
     @character.retreat_round!
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to @character }
+    end
   end
 
   private
