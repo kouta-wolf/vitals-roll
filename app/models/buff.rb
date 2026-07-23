@@ -18,4 +18,27 @@ class Buff < ApplicationRecord
   def display_name
     name.presence || buff_preset&.name
   end
+
+  def decrement_remaining_round!
+    return if remaining_rounds.nil?
+
+    new_remaining_rounds = [ remaining_rounds - 1, 0 ].max
+    update!(remaining_rounds: new_remaining_rounds, active: new_remaining_rounds.positive?)
+  end
+
+  def increment_remaining_round!
+    return if remaining_rounds.nil?
+
+    new_remaining_rounds = duration_rounds.nil? ? remaining_rounds + 1 : [ remaining_rounds + 1, duration_rounds ].min
+    update!(remaining_rounds: new_remaining_rounds)
+  end
+
+  # オフ→オンへの切り替え時、持続切れ(remaining_rounds: 0)のバフは持続ラウンドを満タンに戻して再アクティブ化する
+  def toggle_active!
+    if !active? && remaining_rounds == 0 && duration_rounds.present?
+      update!(active: true, remaining_rounds: duration_rounds)
+    else
+      toggle!(:active)
+    end
+  end
 end

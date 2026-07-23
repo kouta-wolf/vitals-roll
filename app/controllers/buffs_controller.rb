@@ -34,7 +34,12 @@ class BuffsController < ApplicationController
   end
 
   def toggle
-    @buff.toggle!(:active)
+    @buff.toggle_active!
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to character_path(@character) }
+    end
   end
 
   private
