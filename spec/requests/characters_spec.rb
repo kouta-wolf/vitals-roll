@@ -523,4 +523,80 @@ RSpec.describe "Characters", type: :request do
       end
     end
   end
+
+  describe "GET /characters/:id/hit_formula" do
+    let(:user_character) { create(:character, user: user, main_class_level: 3, dexterity: 12) }
+    let(:weapon) { create(:weapon, character: user_character, fixed_hit_rate: 0) }
+
+    context "未ログインの場合" do
+      it "ログインページにリダイレクトされる" do
+        get hit_formula_character_path(user_character), params: { weapon_id: weapon.id }
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "ログイン済みの場合" do
+      before { sign_in user }
+
+      it "正常にアクセスできる" do
+        get hit_formula_character_path(user_character), params: { weapon_id: weapon.id }
+        expect(response).to have_http_status(200)
+      end
+
+      it "命中判定式が表示される" do
+        get hit_formula_character_path(user_character), params: { weapon_id: weapon.id }
+        expect(response.body).to include("2d6+5+0")
+      end
+    end
+
+    context "認可チェック" do
+      before { sign_in user }
+
+      it "他ユーザーのキャラクターの場合404になる" do
+        other_user = create(:user)
+        other_character = create(:character, user: other_user)
+        other_weapon = create(:weapon, character: other_character)
+        get hit_formula_character_path(other_character), params: { weapon_id: other_weapon.id }
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe "GET /characters/:id/attack_formula" do
+    let(:user_character) { create(:character, user: user) }
+    let(:weapon) { create(:weapon, character: user_character, power: 25, critical: 10, fixed_value: 1) }
+
+    context "未ログインの場合" do
+      it "ログインページにリダイレクトされる" do
+        get attack_formula_character_path(user_character), params: { weapon_id: weapon.id }
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "ログイン済みの場合" do
+      before { sign_in user }
+
+      it "正常にアクセスできる" do
+        get attack_formula_character_path(user_character), params: { weapon_id: weapon.id }
+        expect(response).to have_http_status(200)
+      end
+
+      it "ダメージ判定式が表示される" do
+        get attack_formula_character_path(user_character), params: { weapon_id: weapon.id }
+        expect(response.body).to include("k25[10]+1")
+      end
+    end
+
+    context "認可チェック" do
+      before { sign_in user }
+
+      it "他ユーザーのキャラクターの場合404になる" do
+        other_user = create(:user)
+        other_character = create(:character, user: other_user)
+        other_weapon = create(:weapon, character: other_character)
+        get attack_formula_character_path(other_character), params: { weapon_id: other_weapon.id }
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
 end
