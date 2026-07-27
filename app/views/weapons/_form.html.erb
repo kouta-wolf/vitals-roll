@@ -26,25 +26,25 @@
       <div>
         <%= form.label :power, "威力", class: "block text-sm font-medium mb-1" %>
         <%= form.number_field :power,
-              min: 0, max: 500, value: 0,
+              min: 0, max: 500,
               class: "w-full border rounded px-3 py-2 text-sm" %>
       </div>
       <div>
         <%= form.label :critical, "クリティカル値", class: "block text-sm font-medium mb-1" %>
         <%= form.number_field :critical,
-              min: 3, max: 13, value: 10,
+              min: 3, max: 13,
               class: "w-full border rounded px-3 py-2 text-sm" %>
       </div>
       <div>
         <%= form.label :fixed_value, "固定値", class: "block text-sm font-medium mb-1" %>
         <%= form.number_field :fixed_value,
-              min: -10, max: 100, value: 0,
+              min: -10, max: 100,
               class: "w-full border rounded px-3 py-2 text-sm" %>
       </div>
       <div>
         <%= form.label :fixed_hit_rate, "命中補正", class: "block text-sm font-medium mb-1" %>
         <%= form.number_field :fixed_hit_rate,
-              min: -10, max: 10, value: 0,
+              min: -10, max: 10,
               class: "w-full border rounded px-3 py-2 text-sm" %>
       </div>
     </div>
