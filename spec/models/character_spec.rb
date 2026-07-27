@@ -268,7 +268,7 @@ RSpec.describe Character, type: :model do
       it "critical_rayとkubikariが両方activeな場合、$+xの後にr5が続く順序になるか" do
         critical_ray = create(:buff_preset, :special, bonus_value: 2)
         kubikari = create(:buff_preset, name: "首刈り刀", special_type: "kubikari", target_status: nil, bonus_value: 0)
-        create(:buff, :from_preset, character: character, buff_preset: critical_ray, active: true, target_status: nil)
+        create(:buff, :from_preset, character: character, buff_preset: critical_ray, active: true, target_status: nil, bonus_value: 2)
         create(:buff, :from_preset, character: character, buff_preset: kubikari, active: true, target_status: nil)
         expect(character.attack_formula(weapon)).to eq("k25[10]+1$+2r5")
       end
