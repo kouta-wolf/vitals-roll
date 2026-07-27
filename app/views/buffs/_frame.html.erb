@@ -1,5 +1,5 @@
 <%= turbo_frame_tag dom_id(character, :buffs) do %>
-  <%= render "buffs/list", character: character %>
+  <%= render "buffs/list", character: character, selected_weapon: local_assigns[:selected_weapon] %>
 
   <%= render "buffs/form", character: character, buff_presets: buff_presets, preset_error: local_assigns[:preset_error] %>
 

@@ -19,7 +19,7 @@
       <section class="p-4 border border-gray-300">
         <h2 class="text-2xl">有効な効果、補正一覧</h2>
 
-        <%= render "buffs/frame", character: @character, buff_presets: @buff_presets, buff: nil %>
+        <%= render "buffs/frame", character: @character, buff_presets: @buff_presets, buff: nil, selected_weapon: @selected_weapon %>
       </section>
 
       <section class="p-4 border border-gray-300">

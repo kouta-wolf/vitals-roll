@@ -35,6 +35,8 @@ class BuffsController < ApplicationController
 
   def toggle
     @buff.toggle_active!
+    @weapons = @character.weapons
+    @selected_weapon = @weapons.find_by(id: params[:weapon_id]) || @weapons.first
 
     respond_to do |format|
       format.turbo_stream
