@@ -435,6 +435,14 @@ RSpec.describe "Buffs", type: :request do
         patch toggle_character_buff_path(character, expired_buff), as: :turbo_stream
         expect(response.body).to include("残り3R")
       end
+
+      it "バフをonにするとturbo_stream上の判定式表示も更新される" do
+        weapon = create(:weapon, character: character, power: 25, critical: 10, fixed_value: 1)
+        # 同一describe内のlet!(:buff)がactive: true, target_status: strength, bonus_value: 1のため+1が既に乗る前提の値
+        damage_buff = create(:buff, character: character, active: false, target_status: "strength", bonus_value: 5, remaining_rounds: nil)
+        patch toggle_character_buff_path(character, damage_buff, weapon_id: weapon.id), as: :turbo_stream
+        expect(response.body).to include("k25[10]+7")
+      end
     end
 
     context "認可チェック" do

@@ -6,7 +6,7 @@
     "
   >
     <div class="flex items-center gap-2">
-      <%= form_with url: toggle_character_buff_path(buff.character, buff), method: :patch do |f| %>
+      <%= form_with url: toggle_character_buff_path(buff.character, buff, weapon_id: local_assigns[:selected_weapon]&.id), method: :patch do |f| %>
         <%= f.check_box :active,
                     checked: buff.active?,
                     onchange: "this.form.requestSubmit()" %>

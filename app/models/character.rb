@@ -33,7 +33,7 @@ class Character < ApplicationRecord
 
   def attack_formula(weapon)
     total = weapon.fixed_value + buff_total_for(%w[strength damage])
-    "k#{weapon.power}[#{weapon.critical}]#{signed(total)}"
+    "k#{weapon.power}[#{weapon.critical}]#{signed(total)}#{special_formula_suffix}"
   end
 
   private
@@ -45,6 +45,26 @@ class Character < ApplicationRecord
 
   def buff_total_for(target_statuses)
     buffs.where(active: true, target_status: target_statuses).sum(:bonus_value)
+  end
+
+  # special_type由来の判定式末尾トークン
+  def special_formula_suffix
+    "#{critical_ray_suffix}#{kubikari_suffix}"
+  end
+
+  # クリティカルレイ: 同時に有効なのは常に1つの前提なのでbonus_valueをそのまま使う
+  def critical_ray_suffix
+    buff = special_buff_for("critical_ray")
+    buff ? "$#{signed(buff.bonus_value)}" : ""
+  end
+
+  # 首刈り刀: bonus_valueは使わず固定でr5を付与する
+  def kubikari_suffix
+    special_buff_for("kubikari") ? "r5" : ""
+  end
+
+  def special_buff_for(special_type)
+    buffs.joins(:buff_preset).find_by(active: true, buff_presets: { special_type: special_type })
   end
 
   # 正の値は+を付け、負の値はそのまま(二重符号を避ける)

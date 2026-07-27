@@ -1,1 +1,2 @@
-<%= turbo_stream.replace dom_id(@buff), partial: "buffs/buff", locals: { buff: @buff } %>
+<%= turbo_stream.replace dom_id(@buff), partial: "buffs/buff", locals: { buff: @buff, selected_weapon: @selected_weapon } %>
+<%= turbo_stream.replace dom_id(@character, :formula), partial: "characters/formula", locals: { character: @character, weapons: @weapons, selected_weapon: @selected_weapon } %>
