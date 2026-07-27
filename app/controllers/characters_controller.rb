@@ -70,10 +70,20 @@ class CharactersController < ApplicationController
 
   def hit_formula
     @formula = @character.hit_formula(@weapon)
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html
+    end
   end
 
   def attack_formula
     @formula = @character.attack_formula(@weapon)
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html
+    end
   end
 
   private

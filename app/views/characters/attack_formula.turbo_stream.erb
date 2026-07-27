@@ -1,0 +1,3 @@
+<%= turbo_stream.replace dom_id(@character, :attack_formula) do %>
+  <span id="<%= dom_id(@character, :attack_formula) %>"><%= @formula %></span>
+<% end %>

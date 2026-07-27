@@ -31,12 +31,7 @@
       <section class="p-4 border border-gray-300">
         <h2 class="text-2xl">判定式</h2>
 
-        <% if @selected_weapon.nil? %>
-          <p class="text-gray-500 mt-2">武器が登録されていません。判定式を表示するには武器を登録してください。</p>
-        <% else %>
-          <p class="mt-2">命中判定式: <%= @character.hit_formula(@selected_weapon) %></p>
-          <p class="mt-2">ダメージ判定式: <%= @character.attack_formula(@selected_weapon) %></p>
-        <% end %>
+        <%= render "characters/formula", character: @character, weapons: @weapons, selected_weapon: @selected_weapon %>
       </section>
     </div>
   </div>
