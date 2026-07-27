@@ -6,6 +6,3 @@ import { application } from "./application"
 
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)
-
-import WeaponFormulaController from "./weapon_formula_controller"
-application.register("weapon-formula", WeaponFormulaController)

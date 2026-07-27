@@ -1,26 +1,18 @@
-<% if selected_weapon.nil? %>
-  <p class="text-gray-500 mt-2">武器が登録されていません。判定式を表示するには武器を登録してください。</p>
-<% else %>
-  <div data-controller="weapon-formula" class="mt-2">
-    <label class="block text-sm font-medium mb-1">武器選択</label>
-    <select data-weapon-formula-target="select" data-action="change->weapon-formula#change"
-            class="border border-gray-300 rounded px-2 py-1">
-      <% weapons.each do |weapon| %>
-        <option value="<%= weapon.id %>" <%= "selected" if weapon == selected_weapon %>><%= weapon.name %></option>
-      <% end %>
-    </select>
+<%= turbo_frame_tag dom_id(character, :formula) do %>
+  <% if selected_weapon.nil? %>
+    <p class="text-gray-500 mt-2">武器が登録されていません。判定式を表示するには武器を登録してください。</p>
+  <% else %>
+    <div class="mt-2">
+      <label class="block text-sm font-medium mb-1">武器選択</label>
+      <div class="flex gap-2">
+        <% weapons.each do |weapon| %>
+          <%= link_to weapon.name, character_path(character, weapon_id: weapon.id),
+                class: "px-3 py-1 rounded border text-sm #{weapon == selected_weapon ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300'}" %>
+        <% end %>
+      </div>
 
-    <%= form_with url: hit_formula_character_path(character), method: :get, class: "hidden",
-          data: { weapon_formula_target: "hitForm", turbo_stream: true } do |f| %>
-      <%= f.hidden_field :weapon_id, value: selected_weapon.id, data: { weapon_formula_target: "hitWeaponId" } %>
-    <% end %>
-
-    <%= form_with url: attack_formula_character_path(character), method: :get, class: "hidden",
-          data: { weapon_formula_target: "attackForm", turbo_stream: true } do |f| %>
-      <%= f.hidden_field :weapon_id, value: selected_weapon.id, data: { weapon_formula_target: "attackWeaponId" } %>
-    <% end %>
-
-    <p class="mt-2">命中判定式: <span id="<%= dom_id(character, :hit_formula) %>"><%= character.hit_formula(selected_weapon) %></span></p>
-    <p class="mt-2">ダメージ判定式: <span id="<%= dom_id(character, :attack_formula) %>"><%= character.attack_formula(selected_weapon) %></span></p>
-  </div>
+      <p class="mt-2">命中判定式: <%= character.hit_formula(selected_weapon) %></p>
+      <p class="mt-2">ダメージ判定式: <%= character.attack_formula(selected_weapon) %></p>
+    </div>
+  <% end %>
 <% end %>

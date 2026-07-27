@@ -14,8 +14,6 @@ Rails.application.routes.draw do
       patch :advance_round
       patch :retreat_round
       patch :reset_round
-      get :hit_formula
-      get :attack_formula
     end
   end
 

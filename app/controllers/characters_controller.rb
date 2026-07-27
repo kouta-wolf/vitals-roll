@@ -1,6 +1,5 @@
 class CharactersController < ApplicationController
-  before_action :set_character, only: [ :show, :edit, :update, :destroy, :advance_round, :retreat_round, :reset_round, :hit_formula, :attack_formula ]
-  before_action :set_weapon, only: [ :hit_formula, :attack_formula ]
+  before_action :set_character, only: [ :show, :edit, :update, :destroy, :advance_round, :retreat_round, :reset_round ]
 
   def index
     @characters = current_user.characters.order(updated_at: :desc).page(params[:page]).per(8)
@@ -68,24 +67,6 @@ class CharactersController < ApplicationController
     end
   end
 
-  def hit_formula
-    @formula = @character.hit_formula(@weapon)
-
-    respond_to do |format|
-      format.turbo_stream
-      format.html
-    end
-  end
-
-  def attack_formula
-    @formula = @character.attack_formula(@weapon)
-
-    respond_to do |format|
-      format.turbo_stream
-      format.html
-    end
-  end
-
   private
 
   def character_params
@@ -94,9 +75,5 @@ class CharactersController < ApplicationController
 
   def set_character
     @character = current_user.characters.find(params[:id])
-  end
-
-  def set_weapon
-    @weapon = @character.weapons.find(params[:weapon_id])
   end
 end
