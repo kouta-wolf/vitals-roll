@@ -155,4 +155,89 @@ RSpec.describe Character, type: :model do
       expect(other_buff.reload.remaining_rounds).to eq(1)
     end
   end
+
+  describe "#hit_formula" do
+    let(:character) { create(:character, main_class_level: 3, dexterity: 12) }
+    let(:weapon) { create(:weapon, character: character, fixed_hit_rate: 0) }
+
+    it "バフなしの場合、クラスLv+器用度ボーナスのみの式になるか" do
+      expect(character.hit_formula(weapon)).to eq("2d6+5+0")
+    end
+
+    it "武器の命中補正が式に反映されるか" do
+      weapon.update!(fixed_hit_rate: 2)
+      expect(character.hit_formula(weapon)).to eq("2d6+7+0")
+    end
+
+    it "対象ステータス(dexterity)のactiveなバフ合計が式に反映されるか" do
+      create(:buff, character: character, active: true, target_status: "dexterity", bonus_value: 1)
+      create(:buff, character: character, active: true, target_status: "dexterity", bonus_value: 2)
+      expect(character.hit_formula(weapon)).to eq("2d6+5+3")
+    end
+
+    it "activeがfalseのバフは合算されないか" do
+      create(:buff, character: character, active: false, target_status: "dexterity", bonus_value: 5)
+      expect(character.hit_formula(weapon)).to eq("2d6+5+0")
+    end
+
+    it "対象ステータスが異なるバフ(strength等)は合算されないか" do
+      create(:buff, character: character, active: true, target_status: "strength", bonus_value: 5)
+      expect(character.hit_formula(weapon)).to eq("2d6+5+0")
+    end
+
+    it "バフ合計が負の値でも式に空白や二重符号が入らないか" do
+      create(:buff, character: character, active: true, target_status: "dexterity", bonus_value: -3)
+      expect(character.hit_formula(weapon)).to eq("2d6+5-3")
+      expect(character.hit_formula(weapon)).not_to include(" ")
+    end
+
+    it "複数武器があっても武器ごとに正しい式を返すか" do
+      other_weapon = create(:weapon, character: character, fixed_hit_rate: -1)
+      expect(character.hit_formula(weapon)).to eq("2d6+5+0")
+      expect(character.hit_formula(other_weapon)).to eq("2d6+4+0")
+    end
+  end
+
+  describe "#attack_formula" do
+    let(:character) { create(:character) }
+    let(:weapon) { create(:weapon, character: character, power: 25, critical: 10, fixed_value: 1) }
+
+    it "バフなしの場合、武器の威力・クリティカル値・固定値のみの式になるか" do
+      expect(character.attack_formula(weapon)).to eq("k25[10]+1")
+    end
+
+    it "対象ステータス(strength)のactiveなバフ合計が式に反映されるか" do
+      create(:buff, character: character, active: true, target_status: "strength", bonus_value: 3)
+      expect(character.attack_formula(weapon)).to eq("k25[10]+4")
+    end
+
+    it "対象ステータス(damage)のactiveなバフ合計も式に反映されるか" do
+      create(:buff, character: character, active: true, target_status: "strength", bonus_value: 3)
+      create(:buff, character: character, active: true, target_status: "damage", bonus_value: 2)
+      expect(character.attack_formula(weapon)).to eq("k25[10]+6")
+    end
+
+    it "activeがfalseのバフは合算されないか" do
+      create(:buff, character: character, active: false, target_status: "damage", bonus_value: 5)
+      expect(character.attack_formula(weapon)).to eq("k25[10]+1")
+    end
+
+    it "対象ステータスが異なるバフ(dexterity等)は合算されないか" do
+      create(:buff, character: character, active: true, target_status: "dexterity", bonus_value: 5)
+      expect(character.attack_formula(weapon)).to eq("k25[10]+1")
+    end
+
+    it "バフ合計を含めた結果が負の値でも式に空白や二重符号が入らないか" do
+      create(:buff, character: character, active: true, target_status: "damage", bonus_value: -5)
+      expect(character.attack_formula(weapon)).to eq("k25[10]-4")
+      expect(character.attack_formula(weapon)).not_to include(" ")
+    end
+
+    it "複数武器があっても武器ごとに正しい式を返すか" do
+      other_weapon = create(:weapon, character: character, power: 40, critical: 9, fixed_value: 3)
+      create(:buff, character: character, active: true, target_status: "strength", bonus_value: 2)
+      expect(character.attack_formula(weapon)).to eq("k25[10]+3")
+      expect(character.attack_formula(other_weapon)).to eq("k40[9]+5")
+    end
+  end
 end

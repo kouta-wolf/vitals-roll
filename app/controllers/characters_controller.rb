@@ -20,6 +20,8 @@ class CharactersController < ApplicationController
 
   def show
     @buff_presets = BuffPreset.all
+    @weapons = @character.weapons
+    @selected_weapon = @weapons.find_by(id: params[:weapon_id]) || @weapons.first
   end
 
   def edit

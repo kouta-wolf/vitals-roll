@@ -10,9 +10,10 @@ class BuffPreset < ApplicationRecord
   }
 
   # 補正対象ステータス。通常バフはこのいずれかに bonus_value を加算する
+  # damage: 筋力等を介さず判定式のダメージ部分へ直接増減するバフ（例: ダメージ+1/-1）用
   TARGET_STATUSES = %w[
     dexterity agility strength vitality intelligence spirit
-    magic_power life_resistance spirit_resistance
+    magic_power life_resistance spirit_resistance damage
   ].freeze
 
   validates :name, presence: true, uniqueness: true

@@ -26,10 +26,29 @@ class Character < ApplicationRecord
     end
   end
 
+  def hit_formula(weapon)
+    base = main_class_level + (dexterity / 6) + weapon.fixed_hit_rate
+    "2d6#{signed(base)}#{signed(buff_total_for('dexterity'))}"
+  end
+
+  def attack_formula(weapon)
+    total = weapon.fixed_value + buff_total_for(%w[strength damage])
+    "k#{weapon.power}[#{weapon.critical}]#{signed(total)}"
+  end
+
   private
 
   # 無限持続(remaining_rounds: nil)を除いた、増減対象のactiveなバフ
   def active_timed_buffs
     buffs.where(active: true).where.not(remaining_rounds: nil)
+  end
+
+  def buff_total_for(target_statuses)
+    buffs.where(active: true, target_status: target_statuses).sum(:bonus_value)
+  end
+
+  # 正の値は+を付け、負の値はそのまま(二重符号を避ける)
+  def signed(value)
+    value >= 0 ? "+#{value}" : value.to_s
   end
 end

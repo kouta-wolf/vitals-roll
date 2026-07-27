@@ -523,4 +523,32 @@ RSpec.describe "Characters", type: :request do
       end
     end
   end
+
+  describe "GET /characters/:id?weapon_id=" do
+    let(:user_character) { create(:character, user: user, main_class_level: 3, dexterity: 12) }
+    let!(:weapon_a) { create(:weapon, character: user_character, name: "武器A", power: 25, critical: 10, fixed_value: 1, fixed_hit_rate: 0) }
+    let!(:weapon_b) { create(:weapon, character: user_character, name: "武器B", power: 15, critical: 9, fixed_value: 2, fixed_hit_rate: -1) }
+
+    context "ログイン済みの場合" do
+      before { sign_in user }
+
+      it "weapon_id未指定の場合は先頭の武器の判定式が表示される" do
+        get character_path(user_character)
+        expect(response.body).to include("2d6+5+0")
+        expect(response.body).to include("k25[10]+1")
+      end
+
+      it "weapon_idを指定するとその武器の判定式が表示される" do
+        get character_path(user_character), params: { weapon_id: weapon_b.id }
+        expect(response.body).to include("2d6+4+0")
+        expect(response.body).to include("k15[9]+2")
+      end
+
+      it "武器が登録されていない場合はその旨のメッセージが表示される" do
+        no_weapon_character = create(:character, user: user)
+        get character_path(no_weapon_character)
+        expect(response.body).to include("武器が登録されていません")
+      end
+    end
+  end
 end
