@@ -549,6 +549,18 @@ RSpec.describe "Characters", type: :request do
         get character_path(no_weapon_character)
         expect(response.body).to include("武器が登録されていません")
       end
+
+      it "命中判定式・ダメージ判定式それぞれにコピーボタンが表示される" do
+        get character_path(user_character)
+        expect(response.body.scan('data-controller="clipboard"').count).to eq(2)
+        expect(response.body.scan(/data-clipboard-target="button"[^>]*>\s*コピー\s*</).count).to eq(2)
+      end
+
+      it "コピー対象のテキストとして判定式が設定される" do
+        get character_path(user_character)
+        expect(response.body).to include('data-clipboard-target="source">2d6+5+0<')
+        expect(response.body).to include('data-clipboard-target="source">k25[10]+1<')
+      end
     end
   end
 end
