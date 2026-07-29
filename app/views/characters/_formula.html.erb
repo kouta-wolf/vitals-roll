@@ -11,8 +11,22 @@
         <% end %>
       </div>
 
-      <p class="mt-2">命中判定式: <%= character.hit_formula(selected_weapon) %></p>
-      <p class="mt-2">ダメージ判定式: <%= character.attack_formula(selected_weapon) %></p>
+      <p class="mt-2 flex items-center gap-2" data-controller="clipboard">
+        命中判定式:
+        <span data-clipboard-target="source"><%= character.hit_formula(selected_weapon) %></span>
+        <button type="button" data-action="clipboard#copy" data-clipboard-target="button"
+            class="px-2 py-0.5 text-xs rounded border border-gray-300 bg-white hover:bg-gray-50">
+          コピー
+        </button>
+      </p>
+      <p class="mt-2 flex items-center gap-2" data-controller="clipboard">
+        ダメージ判定式:
+        <span data-clipboard-target="source"><%= character.attack_formula(selected_weapon) %></span>
+        <button type="button" data-action="clipboard#copy" data-clipboard-target="button"
+            class="px-2 py-0.5 text-xs rounded border border-gray-300 bg-white hover:bg-gray-50">
+          コピー
+        </button>
+      </p>
     </div>
   <% end %>
 <% end %>
