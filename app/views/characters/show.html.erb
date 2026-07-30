@@ -24,6 +24,16 @@
 
       <section class="p-4 border border-gray-300">
         <h2 class="text-2xl">キャラクター基礎情報</h2>
+
+        <ul class="mt-2 space-y-1">
+          <li>器用度（DEX）: <%= @character.dexterity %></li>
+          <li>敏捷度（AGI）: <%= @character.agility %></li>
+          <li>筋力（STR）: <%= @character.strength %></li>
+          <li>生命力（VIT）: <%= @character.vitality %></li>
+          <li>知力（INT）: <%= @character.intelligence %></li>
+          <li>精神力（MND）: <%= @character.spirit %></li>
+          <li>防護点: <%= @character.defense %></li>
+        </ul>
       </section>
     </div>
 
