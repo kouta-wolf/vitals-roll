@@ -3,7 +3,7 @@ services:
     name: vitals-roll
     runtime: ruby
     plan: free
-    buildCommand: "bundle install && yarn install && bundle exec rails db:prepare assets:precompile"
+    buildCommand: "bundle install && yarn install && bundle exec rails db:prepare db:seed assets:precompile"
     startCommand: "bundle exec rails server -b 0.0.0.0 -p $PORT"
     envVars:
       - key: RAILS_ENV
