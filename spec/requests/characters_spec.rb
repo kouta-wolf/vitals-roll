@@ -36,6 +36,11 @@ RSpec.describe "Characters", type: :request do
         get characters_path
         expect(response.body).to include("まだキャラクターがいません")
       end
+
+      it "空状態では使い方ガイドへのリンクが表示される" do
+        get characters_path
+        expect(response.body).to include(%(href="#{guide_path}"))
+      end
     end
   end
 
