@@ -151,6 +151,17 @@ RSpec.describe "Characters", type: :request do
         get character_path(other_character)
         expect(response).to have_http_status(404)
       end
+
+      it "基礎ステータス6種と防護点が表示される" do
+        get character_path(user_character)
+        expect(response.body).to include("器用度（DEX）: 12")
+        expect(response.body).to include("敏捷度（AGI）: 12")
+        expect(response.body).to include("筋力（STR）: 12")
+        expect(response.body).to include("生命力（VIT）: 12")
+        expect(response.body).to include("知力（INT）: 12")
+        expect(response.body).to include("精神力（MND）: 12")
+        expect(response.body).to include("防護点: 4")
+      end
     end
   end
 
