@@ -196,6 +196,12 @@ RSpec.describe Character, type: :model do
       expect(character.hit_formula(weapon)).to eq("2d6+5+0")
       expect(character.hit_formula(other_weapon)).to eq("2d6+4+0")
     end
+
+    it "能力値上昇バフ(value_kind: ability)はボーナス換算(÷6切り捨て)されて加算されるか" do
+      # 器用度値+12 → ボーナス+2
+      create(:buff, character: character, active: true, target_status: "dexterity", value_kind: "ability", bonus_value: 12)
+      expect(character.hit_formula(weapon)).to eq("2d6+5+2")
+    end
   end
 
   describe "#attack_formula" do
@@ -238,6 +244,33 @@ RSpec.describe Character, type: :model do
       create(:buff, character: character, active: true, target_status: "strength", bonus_value: 2)
       expect(character.attack_formula(weapon)).to eq("k25[10]+3")
       expect(character.attack_formula(other_weapon)).to eq("k40[9]+5")
+    end
+
+    context "value_kind: ability(能力値そのものを上げるバフ)" do
+      it "能力値上昇バフはボーナス換算(÷6切り捨て)されて加算されるか" do
+        # 筋力値+12 → ボーナス+2
+        create(:buff, character: character, active: true, target_status: "strength", value_kind: "ability", bonus_value: 12)
+        expect(character.attack_formula(weapon)).to eq("k25[10]+3")
+      end
+
+      it "6の倍数でない能力値上昇バフは端数が切り捨てられるか" do
+        # 筋力値+8 → 8/6=1 → ボーナス+1
+        create(:buff, character: character, active: true, target_status: "strength", value_kind: "ability", bonus_value: 8)
+        expect(character.attack_formula(weapon)).to eq("k25[10]+2")
+      end
+
+      it "ability(換算あり)とfixed(換算なし)のバフが正しく区別して合算されるか" do
+        create(:buff, character: character, active: true, target_status: "strength", value_kind: "ability", bonus_value: 12) # → +2
+        create(:buff, character: character, active: true, target_status: "damage",   value_kind: "fixed",   bonus_value: 3)  # → +3
+        expect(character.attack_formula(weapon)).to eq("k25[10]+6")
+      end
+
+      it "能力値低下バフ(負値)もボーナス換算され二重符号にならないか" do
+        # 筋力値-12 → ボーナス-2 → 1-2=-1
+        create(:buff, character: character, active: true, target_status: "strength", value_kind: "ability", bonus_value: -12)
+        expect(character.attack_formula(weapon)).to eq("k25[10]-1")
+        expect(character.attack_formula(weapon)).not_to include(" ")
+      end
     end
 
     context "special_type(critical_ray/kubikari)による特殊接尾辞" do

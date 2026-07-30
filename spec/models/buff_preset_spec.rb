@@ -56,6 +56,22 @@ RSpec.describe BuffPreset, type: :model do
     end
   end
 
+  describe "#build_buff_for" do
+    let(:character) { create(:character) }
+
+    it "value_kindがバフへコピーされるか" do
+      preset = create(:buff_preset, target_status: "strength", value_kind: "ability", bonus_value: 12)
+      buff = preset.build_buff_for(character)
+      expect(buff.value_kind).to eq("ability")
+    end
+
+    it "value_kind未指定のプリセットからはfixedのバフが生成されるか" do
+      preset = create(:buff_preset, target_status: "strength", bonus_value: 3)
+      buff = preset.build_buff_for(character)
+      expect(buff.value_kind).to eq("fixed")
+    end
+  end
+
   describe "境界値" do
     context "bonus_value" do
       it "-1000なら無効になるか" do
