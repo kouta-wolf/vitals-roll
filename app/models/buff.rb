@@ -5,6 +5,12 @@ class Buff < ApplicationRecord
   # buff_presetsと同じ対象ステータス一覧を共有する
   TARGET_STATUSES = BuffPreset::TARGET_STATUSES
 
+  # bonus_valueの単位。詳細はBuffPreset側のenum定義を参照
+  enum :value_kind, {
+    fixed:   "fixed",
+    ability: "ability"
+  }, default: :fixed
+
   # プリセット由来はbuff_preset.name経由で参照するためnameを持たない
   validates :name, presence: true, if: -> { buff_preset.nil? }
   validates :bonus_value, numericality: { only_integer: true, in: -999..999 }

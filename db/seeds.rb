@@ -17,9 +17,10 @@ buff_presets = [
   {
     name:            "マッスルベアー",
     target_status:   "strength",
-    bonus_value:     12,
+    bonus_value:     12,       # 筋力値+12 → ボーナス換算(÷6)で判定式へ +2
     duration_rounds: 3,
-    special_type:    nil
+    special_type:    nil,
+    value_kind:      "ability" # 能力値そのものを上げるためボーナス換算が必要
   }
 ]
 
