@@ -42,6 +42,7 @@ class CharactersController < ApplicationController
 
   def advance_round
     @character.advance_round!
+    set_weapons_for_formula
 
     respond_to do |format|
       format.turbo_stream
@@ -51,6 +52,7 @@ class CharactersController < ApplicationController
 
   def retreat_round
     @character.retreat_round!
+    set_weapons_for_formula
 
     respond_to do |format|
       format.turbo_stream
@@ -60,6 +62,7 @@ class CharactersController < ApplicationController
 
   def reset_round
     @character.reset_round!
+    set_weapons_for_formula
 
     respond_to do |format|
       format.turbo_stream
@@ -75,5 +78,10 @@ class CharactersController < ApplicationController
 
   def set_character
     @character = current_user.characters.find(params[:id])
+  end
+
+  def set_weapons_for_formula
+    @weapons = @character.weapons
+    @selected_weapon = @weapons.find_by(id: params[:weapon_id]) || @weapons.first
   end
 end
