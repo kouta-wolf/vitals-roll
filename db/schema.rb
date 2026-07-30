@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_13_003349) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_30_004825) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_13_003349) do
     t.string "special_type"
     t.string "target_status"
     t.datetime "updated_at", null: false
+    t.string "value_kind", default: "fixed", null: false
     t.index ["name"], name: "index_buff_presets_on_name", unique: true
   end
 
@@ -36,6 +37,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_13_003349) do
     t.integer "remaining_rounds"
     t.string "target_status"
     t.datetime "updated_at", null: false
+    t.string "value_kind", default: "fixed", null: false
     t.index ["buff_preset_id"], name: "index_buffs_on_buff_preset_id"
     t.index ["character_id"], name: "index_buffs_on_character_id"
   end

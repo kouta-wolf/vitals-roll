@@ -9,6 +9,12 @@ class BuffPreset < ApplicationRecord
     dice_fix:     "dice_fix"      # ダイス目固定(変転時など): 判定式末尾に $x (x = bonus_value)
   }
 
+  # bonus_valueの単位。special_typeと同様、DB直読みで意味が分かるようstringで保存する
+  enum :value_kind, {
+    fixed:   "fixed",  # 判定式へそのまま加算する固定値/ボーナス値
+    ability: "ability" # 能力値そのものの増減。ボーナス換算(÷6切り捨て)を経てから加算する
+  }, default: :fixed
+
   # 補正対象ステータス。通常バフはこのいずれかに bonus_value を加算する
   # damage: 筋力等を介さず判定式のダメージ部分へ直接増減するバフ（例: ダメージ+1/-1）用
   TARGET_STATUSES = %w[
@@ -31,9 +37,12 @@ class BuffPreset < ApplicationRecord
       buff_preset: self,
       bonus_value: bonus_value,
       target_status: target_status,
+      value_kind: value_kind,
       duration_rounds: duration_rounds,
       remaining_rounds: duration_rounds,
-      active: true
+      # 登録直後はactive: falseで作る。オンにした時だけ判定式へ反映される仕様のため、
+      # 登録時点で判定式が黙って変わってしまうのを防ぐ（ユーザーが明示的にトグルしてオンにする）
+      active: false
     )
   end
 end

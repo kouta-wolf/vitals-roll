@@ -43,8 +43,14 @@ class Character < ApplicationRecord
     buffs.where(active: true).where.not(remaining_rounds: nil)
   end
 
+  # 対象ステータスのactiveなバフ合計。
+  # value_kind: ability(能力値そのものを上げる)はボーナス換算(合計÷6切り捨て)を経てから加算し、
+  # value_kind: fixed(固定値/ボーナス値)はそのまま加算する。
   def buff_total_for(target_statuses)
-    buffs.where(active: true, target_status: target_statuses).sum(:bonus_value)
+    scope = buffs.where(active: true, target_status: target_statuses)
+    fixed_total = scope.fixed.sum(:bonus_value)
+    ability_total = scope.ability.sum(:bonus_value) / 6
+    fixed_total + ability_total
   end
 
   # special_type由来の判定式末尾トークン
