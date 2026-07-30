@@ -27,6 +27,11 @@ RSpec.describe "Buffs", type: :request do
         expect(response.body).to include("名前")
       end
 
+      it "value_kind選択欄が表示される" do
+        get new_character_buff_path(character)
+        expect(response.body).to include("種別")
+      end
+
       it "他ユーザーのキャラクターの場合404になる" do
         other_character = create(:character, user: create(:user))
         get new_character_buff_path(other_character)
@@ -67,6 +72,18 @@ RSpec.describe "Buffs", type: :request do
             active: false,
             remaining_rounds: 5
           )
+        end
+
+        it "value_kindを指定しない場合fixedで登録される" do
+          post character_buffs_path(character), params: valid_manual_params
+          expect(character.buffs.last.value_kind).to eq("fixed")
+        end
+
+        it "value_kind: abilityを指定すると能力値そのものを上げるバフとして登録される" do
+          post character_buffs_path(character), params: {
+            buff: { name: "疑似マッスルベアー", target_status: "strength", bonus_value: 12, duration_rounds: 3, value_kind: "ability" }
+          }
+          expect(character.buffs.last.value_kind).to eq("ability")
         end
 
         it "キャラクター詳細ページにリダイレクトされる" do
@@ -271,6 +288,12 @@ RSpec.describe "Buffs", type: :request do
           buff.update!(active: true)
           patch character_buff_path(character, buff), params: valid_params
           expect(buff.reload.active).to be false
+        end
+
+        it "value_kindを更新できる" do
+          params = { buff: { name: "陽光の魔符", target_status: "strength", bonus_value: 12, duration_rounds: 3, value_kind: "ability" } }
+          patch character_buff_path(character, buff), params: params
+          expect(buff.reload.value_kind).to eq("ability")
         end
       end
 
