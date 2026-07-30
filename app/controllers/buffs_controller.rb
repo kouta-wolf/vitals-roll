@@ -92,7 +92,7 @@ class BuffsController < ApplicationController
   end
 
   def buff_params
-    params.require(:buff).permit(:buff_preset_id, :name, :target_status, :bonus_value, :duration_rounds)
+    params.require(:buff).permit(:buff_preset_id, :name, :target_status, :bonus_value, :duration_rounds, :value_kind)
   end
 
   def manual_buff_params

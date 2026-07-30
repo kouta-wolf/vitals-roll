@@ -32,6 +32,14 @@
   </div>
 
   <div class="flex items-center gap-1">
+    <span class="text-xs text-gray-500 shrink-0">種別</span>
+    <%= form.select :value_kind,
+          options_for_select(value_kind_options, buff.value_kind),
+          {},
+          class: "border rounded px-1 py-1 text-sm w-24" %>
+  </div>
+
+  <div class="flex items-center gap-1">
     <span class="text-xs text-gray-500 shrink-0">持続R</span>
     <%= form.number_field :duration_rounds,
           min: 0, max: 50,
