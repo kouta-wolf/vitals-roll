@@ -362,6 +362,13 @@ RSpec.describe "Characters", type: :request do
         patch advance_round_character_path(user_character), as: :turbo_stream
         expect(response.body).to include("残り2R")
       end
+
+      it "バフが失効して判定式が変わる場合、turbo_stream内の判定式表示も更新される" do
+        weapon = create(:weapon, character: user_character)
+        create(:buff, character: user_character, active: true, target_status: "strength", bonus_value: 2, duration_rounds: 1, remaining_rounds: 1)
+        patch advance_round_character_path(user_character), as: :turbo_stream
+        expect(response.body).to include(user_character.attack_formula(weapon))
+      end
     end
 
     context "認可チェック" do
@@ -434,6 +441,12 @@ RSpec.describe "Characters", type: :request do
         patch retreat_round_character_path(user_character), as: :turbo_stream
         expect(response.body).to include("残り2R")
       end
+
+      it "turbo_stream形式でリクエストすると判定式表示も再描画される" do
+        weapon = create(:weapon, character: user_character)
+        patch retreat_round_character_path(user_character), as: :turbo_stream
+        expect(response.body).to include(user_character.attack_formula(weapon))
+      end
     end
 
     context "認可チェック" do
@@ -504,6 +517,13 @@ RSpec.describe "Characters", type: :request do
       it "リセットしたことを明示するメッセージが表示される" do
         patch reset_round_character_path(user_character)
         expect(flash[:notice]).to eq("ラウンドをリセットしました")
+      end
+
+      it "バフが失効して判定式が変わる場合、turbo_stream内の判定式表示も更新される" do
+        weapon = create(:weapon, character: user_character)
+        create(:buff, character: user_character, active: true, target_status: "strength", bonus_value: 2, duration_rounds: 3, remaining_rounds: 1)
+        patch reset_round_character_path(user_character), as: :turbo_stream
+        expect(response.body).to include(user_character.attack_formula(weapon))
       end
     end
 
