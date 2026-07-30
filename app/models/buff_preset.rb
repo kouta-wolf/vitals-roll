@@ -40,7 +40,9 @@ class BuffPreset < ApplicationRecord
       value_kind: value_kind,
       duration_rounds: duration_rounds,
       remaining_rounds: duration_rounds,
-      active: true
+      # 登録直後はactive: falseで作る。オンにした時だけ判定式へ反映される仕様のため、
+      # 登録時点で判定式が黙って変わってしまうのを防ぐ（ユーザーが明示的にトグルしてオンにする）
+      active: false
     )
   end
 end

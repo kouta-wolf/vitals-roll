@@ -58,13 +58,13 @@ RSpec.describe "Buffs", type: :request do
           expect { post character_buffs_path(character), params: valid_manual_params }.to change(character.buffs, :count).by(1)
         end
 
-        it "buff_preset_idはnilで、active/remaining_roundsが設定される" do
+        it "buff_preset_idはnilで、登録直後はactive: false・remaining_roundsが設定される" do
           post character_buffs_path(character), params: valid_manual_params
           buff = character.buffs.last
           expect(buff).to have_attributes(
             buff_preset_id: nil,
             name: "陽光の魔符",
-            active: true,
+            active: false,
             remaining_rounds: 5
           )
         end
@@ -125,7 +125,7 @@ RSpec.describe "Buffs", type: :request do
             target_status: "strength",
             duration_rounds: 3,
             remaining_rounds: 3,
-            active: true
+            active: false
           )
         end
 
@@ -265,6 +265,12 @@ RSpec.describe "Buffs", type: :request do
           buff.update!(remaining_rounds: 1)
           patch character_buff_path(character, buff), params: valid_params
           expect(buff.reload.remaining_rounds).to eq(3)
+        end
+
+        it "更新するとactiveがfalseに落ちる" do
+          buff.update!(active: true)
+          patch character_buff_path(character, buff), params: valid_params
+          expect(buff.reload.active).to be false
         end
       end
 

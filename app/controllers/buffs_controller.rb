@@ -71,7 +71,8 @@ class BuffsController < ApplicationController
 
   def create_buff_manual
     @buff = Buff.new(manual_buff_params.merge(character: @character)) # 理由はnewアクション参照
-    @buff.active = true
+    # 登録直後はactive: false。オンにした時だけ判定式へ反映される仕様のため、登録時点で式が黙って変わるのを防ぐ
+    @buff.active = false
     @buff.remaining_rounds = @buff.duration_rounds
 
     if @buff.save
@@ -98,8 +99,9 @@ class BuffsController < ApplicationController
     buff_params.except(:buff_preset_id)
   end
 
-  # duration_rounds編集時は残りラウンドをリセットする仕様
+  # duration_rounds編集時は残りラウンドをリセットする仕様。
+  # 更新後はactive: falseに落とす。オンにした時だけ判定式へ反映される仕様に揃え、更新時点で式が黙って変わるのを防ぐ
   def resynced_attrs
-    manual_buff_params.merge(remaining_rounds: manual_buff_params[:duration_rounds])
+    manual_buff_params.merge(remaining_rounds: manual_buff_params[:duration_rounds], active: false)
   end
 end
