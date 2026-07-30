@@ -13,6 +13,7 @@
         <p class="text-5xl">🎲</p>
         <p class="text-lg font-medium text-slate-700">まだキャラクターがいません</p>
         <p class="text-sm text-gray-500">最初のキャラクターを作成して始めましょう</p>
+        <%= link_to "使い方ガイドを見る", guide_path, class: "text-blue-600 hover:underline text-sm" %>
       </div>
     <% else %>
       <p>全<%= @characters.total_count %>件中 <%= @characters.offset_value + 1 %>〜<%= @characters.offset_value + @characters.count %>件を表示</p>

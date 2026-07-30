@@ -23,6 +23,7 @@ Rails.application.routes.draw do
     get "privacy", action: :privacy
     # 現時点でgoogleフォームのためgetのみ
     get "contact", action: :contact
+    get "guide", action: :guide
   end
   # Renderのヘルスチェック用（/up が200を返す）
   get "up" => "rails/health#show", as: :rails_health_check
