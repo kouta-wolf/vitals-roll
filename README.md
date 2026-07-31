@@ -376,6 +376,7 @@ CCFOLIAではプレイヤーはバフがかかるたびにチャットパレッ�
 - name : string / バフ名
 - target_status : string / 対象ステータス
 - bonus_value : integer / 補正値
+- value_kind : string / 補正値の種別（fixed: 固定値, ability: 能力値）
 - duration_rounds : integer / 持続ラウンド数（nullは無限）
 - special_type : string / 特殊処理
 - created_at : datetime / 作成日時
@@ -389,6 +390,7 @@ CCFOLIAではプレイヤーはバフがかかるたびにチャットパレッ�
 - name : string / バフ名
 - target_status : string / 対象ステータス
 - bonus_value : integer / 補正値
+- value_kind : string / 補正値の種別（fixed: 固定値, ability: 能力値）
 - duration_rounds : integer / 持続ラウンド数（nullは無限）
 - remaining_rounds : integer / 残りラウンド数
 - active : boolean / 有効スイッチ
