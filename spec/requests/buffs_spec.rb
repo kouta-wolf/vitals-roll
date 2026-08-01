@@ -323,7 +323,7 @@ RSpec.describe "Buffs", type: :request do
 
         it "更新できない場合エラーメッセージが表示される" do
           patch character_buff_path(character, buff), params: invalid_params
-          expect(response.body).to include("Name can&#39;t be blank")
+          expect(response.body).to include("バフ名を入力してください")
         end
 
         it "更新出来ない場合、DBの値が変わっていない" do

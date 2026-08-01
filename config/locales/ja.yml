@@ -1,0 +1,31 @@
+ja:
+  activerecord:
+    attributes:
+      character:
+        user: "ユーザー"
+        name: "名前"
+        dexterity: "器用度"
+        agility: "敏捷度"
+        strength: "筋力"
+        vitality: "生命力"
+        intelligence: "知力"
+        spirit: "精神力"
+      weapon:
+        character: "キャラクター"
+        name: "武器名"
+        power: "威力"
+        critical: "クリティカル値"
+        fixed_value: "固定値"
+        fixed_hit_rate: "命中補正"
+      buff:
+        character: "キャラクター"
+        name: "バフ名"
+        target_status: "対象ステータス"
+        bonus_value: "補正値"
+        duration_rounds: "持続ラウンド数"
+        remaining_rounds: "残りラウンド数"
+      buff_preset:
+        name: "バフ名"
+        target_status: "対象ステータス"
+        bonus_value: "補正値"
+        duration_rounds: "持続ラウンド数"

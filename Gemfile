@@ -44,6 +44,10 @@ gem "image_processing", "~> 1.2"
 
 # 認証用gem
 gem "devise", "~> 4.9.4"
+gem "devise-i18n"
+
+# i18n（バリデーションエラー等の日本語化）
+gem "rails-i18n"
 
 # ページネーション用gem
 gem "kaminari", "~> 1.2.2"
