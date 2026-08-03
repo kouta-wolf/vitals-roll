@@ -1,3 +1,22 @@
+<p align="center">
+  <img src="docs/vitals-roll.png" alt="vitals-roll logo" width="200">
+</p>
+
+<p align="center">
+  <a href="https://github.com/kouta-wolf/vitals-roll/actions/workflows/ci.yml"><img src="https://github.com/kouta-wolf/vitals-roll/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://open.vscode.dev/kouta-wolf/vitals-roll"><img src="https://img.shields.io/static/v1?logo=visualstudiocode&label=&message=Open%20in%20Visual%20Studio%20Code&labelColor=2c2c32&color=007acc&logoColor=007acc" alt="Open in Visual Studio Code"></a>
+  <br>
+  <img src="https://img.shields.io/badge/Ruby-3.4-CC342D?logo=ruby&logoColor=white" alt="Ruby">
+  <img src="https://img.shields.io/badge/Rails-8.1-CC0000?logo=rubyonrails&logoColor=white" alt="Rails">
+  <img src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/TailwindCSS-4.3-06B6D4?logo=tailwindcss&logoColor=white" alt="TailwindCSS">
+  <img src="https://img.shields.io/badge/Hotwire-Turbo%20%2B%20Stimulus-3730A3?logo=turbo&logoColor=white" alt="Hotwire">
+</p>
+
+## 🌐 App URL
+
+- **[vitals-roll](https://vitals-roll.onrender.com)**
+
 ## 1. サービス概要
 
 SW2.5のオンラインセッション中に発生するバフ管理の手間とミスを解消するアプリ。バフの持続時間を自動でカウントし、バフ反映済みの判定式をクリップボードにコピーすることで、CCFOLIAのチャットパレットを書き直す手間なくゲームへの集中を維持できる。
@@ -56,16 +75,20 @@ TRPGでは戦闘中にさまざまな魔法や技能、道具が使用される�
 ### 4-1. 想定しているユーザー
 
 年齢設定：
-  - 年齢：20〜30代
-  - 理由：TRPGが活発にプレイされる世代。社会人として確保できるプレイ時間が限られているため、管理ミスによる中断の影響が大きい。
+
+- 年齢：20〜30代
+- 理由：TRPGが活発にプレイされる世代。社会人として確保できるプレイ時間が限られているため、管理ミスによる中断の影響が大きい。
 
 生活・状況設定：
-  - 生活・状況：友人と定期的にSW2.5のオンラインセッションをしている社会人または大学生
-  - 理由：セッションは事前に時間を確保して臨むものであり、管理ミスによる中断は貴重な時間を削る。アプリで管理の手間を減らすことで、限られた時間をゲーム本来の楽しみに使えるようになる。
+
+- 生活・状況：友人と定期的にSW2.5のオンラインセッションをしている社会人または大学生
+- 理由：セッションは事前に時間を確保して臨むものであり、管理ミスによる中断は貴重な時間を削る。アプリで管理の手間を減らすことで、限られた時間をゲーム本来の楽しみに使えるようになる。
 
 環境設定：
-  - 環境：CCFOLIAを使いバフ込みの判定式をチャットパレットやチャットに手動で書き込みしながら管理しているプレイヤー
-  - 理由：CCFOLIAのチャットパレットは行ごとに判定式を管理するツールで、バフによる数値変化を都度手入力で更新する必要がある。特にSW2.5の近接職は複数の強化効果が重なる場面が多く、判定のたびに式全体を書き直すコストが最も高い。
+
+- 環境：CCFOLIAを使いバフ込みの判定式をチャットパレットやチャットに手動で書き込みしながら管理しているプレイヤー
+- 理由：CCFOLIAのチャットパレットは行ごとに判定式を管理するツールで、バフによる数値変化を都度手入力で更新する必要がある。特にSW2.5の近接職は複数の強化効果が重なる場面が多く、判定のたびに式全体を書き直すコストが最も高い。
+
 ---
 
 ### 4-2. 自分とユーザーの距離
@@ -104,16 +127,19 @@ TRPGでは戦闘中にさまざまな魔法や技能、道具が使用される�
 ### 5-1. 似たサービスの調査
 
 **ゆとシートⅡ**
+
 - サービス名：ゆとシートⅡ for SW2.5
 - URL：[ゆとシートⅡ](https://yutorize.work/ytsheet/sw2.5/)
 - どんなことができるか：TRPG専用のキャラクターシート総合管理ツール。キャラ作成・成長管理・CCFOLIAとのキャラクターコマ連携まで網羅している。チャットパレット用の変数群を自動生成する機能も備えているが、バフ・デバフの動的管理は非対応。
 
 **CCFOLIA**
+
 - サービス名：CCFOLIA
 - URL：[CCFOLIA](https://ccfolia.com)
 - どんなことができるか：現在のTRPGオンラインセッションツールのスタンダード。チャット機能でダイス判定を行うことができ、TRPGプレイ時に使う音楽やボード環境、カード機能、立ち絵表示機能など幅広い機能を持つ。スクリプト注入・bot利用は規約で禁止されており、外部ツールからのリアルタイム連携は不可能。提供するAPIは新規キャラクター追加のみ対応しており、既存データの更新はできない。
 
 **シノビガミ - 忍神 - キャラクター登録サイト**
+
 - サービス名：シノビガミキャラクターシート
 - URL：[シノビガミキャラクターシート](https://character-sheets.appspot.com/shinobigami/edit.html)
 - どんなことができるか：シノビガミ専用のキャラクターシート管理ツール。特技間の距離を使った特殊なルールに基づき、命中判定を自動算出する機能が特徴。「連携」ボタンでチャットパレット用のテキストをクリップボードにコピーする機能を持っており、vitals-rollの出力機能の参考になる。
