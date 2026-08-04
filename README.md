@@ -15,7 +15,7 @@
 
 ## 🌐 App URL
 
-- **[vitals-roll](https://vitals-roll.onrender.com)**
+- **[vitals-roll](https://vitals-roll.hexwolf.org)**
 
 ## 1. サービス概要
 
