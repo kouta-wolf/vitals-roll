@@ -79,7 +79,7 @@ group :development do
   gem "hotwire-spark"
 
   # Ruby LSP対応エディタ向けのLanguage Server [https://github.com/Shopify/ruby-lsp]
-  gem "ruby-lsp", "~> 0.26.9", require: false
+  gem "ruby-lsp", "~> 0.26.10", require: false
 
   # ruby-lspのRails向け拡張（モデルのカラム補完・テストのコードレンズなど） [https://github.com/Shopify/ruby-lsp-rails]
   gem "ruby-lsp-rails", require: false
