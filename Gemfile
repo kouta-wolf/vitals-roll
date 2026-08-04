@@ -43,7 +43,7 @@ gem "thruster", require: false
 gem "image_processing", "~> 1.2"
 
 # 認証用gem
-gem "devise", "~> 4.9.4"
+gem "devise", "~> 5.0.4"
 gem "devise-i18n"
 
 # i18n（バリデーションエラー等の日本語化）
