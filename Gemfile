@@ -83,6 +83,9 @@ group :development do
 
   # ruby-lspのRails向け拡張（モデルのカラム補完・テストのコードレンズなど） [https://github.com/Shopify/ruby-lsp-rails]
   gem "ruby-lsp-rails", require: false
+
+  # 開発環境でメール送信内容をブラウザ確認する（Docker環境向けにWeb UI経由で表示） [https://github.com/fgrehm/letter_opener_web]
+  gem "letter_opener_web"
 end
 
 group :test do
