@@ -44,3 +44,6 @@ docs/ER_dev/
 
 # Claude用データのため
 .claude/settings.local.json
+
+# 作業計画メモのため
+/tasks/
