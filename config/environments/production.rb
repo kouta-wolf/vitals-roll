@@ -63,13 +63,12 @@ Rails.application.configure do
   # Specify outgoing SMTP server (Resend).
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address:              "smtp.resend.com",
-    port:                 465,
-    user_name:            "resend",
-    password:             ENV.fetch("RESEND_API_KEY"),
-    authentication:       :plain,
-    enable_starttls_auto: true,
-    ssl:                  true
+    address:        "smtp.resend.com",
+    port:           465,
+    user_name:      "resend",
+    password:       ENV.fetch("RESEND_API_KEY"),
+    authentication: :plain,
+    tls:            true
   }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
