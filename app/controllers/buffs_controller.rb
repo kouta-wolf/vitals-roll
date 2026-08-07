@@ -1,5 +1,6 @@
 class BuffsController < ApplicationController
   before_action :set_character
+  before_action :preload_buffs_with_preset, only: :toggle
   before_action :set_buff, only: [ :edit, :update, :destroy, :toggle ]
 
   def new
@@ -87,6 +88,12 @@ class BuffsController < ApplicationController
     @character = current_user.characters.find(params[:character_id])
   end
 
+  def preload_buffs_with_preset
+    @character.preload_buffs_with_preset!
+  end
+
+  # toggleでは直前にプリロードしているため、ここでのfindはSQLを投げずメモリ内走査になり
+  # プリロード済み配列と同一インスタンスが返る(Character側のinverse_of指定による)
   def set_buff
     @buff = @character.buffs.find(params[:id])
   end

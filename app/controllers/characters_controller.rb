@@ -1,5 +1,6 @@
 class CharactersController < ApplicationController
   before_action :set_character, only: [ :show, :edit, :update, :destroy, :advance_round, :retreat_round, :reset_round ]
+  before_action :preload_buffs_with_preset, only: [ :show, :advance_round, :retreat_round, :reset_round ]
 
   def index
     @characters = current_user.characters.order(updated_at: :desc).page(params[:page]).per(8)
@@ -78,6 +79,10 @@ class CharactersController < ApplicationController
 
   def set_character
     @character = current_user.characters.find(params[:id])
+  end
+
+  def preload_buffs_with_preset
+    @character.preload_buffs_with_preset!
   end
 
   def set_weapons_for_formula

@@ -85,6 +85,16 @@ RSpec.describe Character, type: :model do
       character.advance_round!
       expect(other_buff.reload.remaining_rounds).to eq(3)
     end
+
+    it "buffsをロード済みの状態でも、失効直後の同一リクエスト内でattack_formulaへ最新状態が反映されるか(association cacheが古いままにならないか)" do
+      weapon = create(:weapon, character: character, power: 25, critical: 10, fixed_value: 1)
+      create(:buff, character: character, active: true, target_status: "strength", bonus_value: 2, duration_rounds: 1, remaining_rounds: 1)
+      character.buffs.load # 事前ロードしてキャッシュを作っておく(コントローラの挙動を再現)
+
+      character.advance_round!
+
+      expect(character.attack_formula(weapon)).to eq("k25[10]+1")
+    end
   end
 
   describe "#retreat_round!" do
@@ -118,6 +128,15 @@ RSpec.describe Character, type: :model do
       other_buff = create(:buff, character: other_character, active: true, duration_rounds: 3, remaining_rounds: 1)
       character.retreat_round!
       expect(other_buff.reload.remaining_rounds).to eq(1)
+    end
+
+    it "buffsをロード済みの状態でも、同一リクエスト内で最新のremaining_roundsが読めるか(association cacheが古いままにならないか)" do
+      create(:buff, character: character, active: true, duration_rounds: 3, remaining_rounds: 1)
+      character.buffs.load # 事前ロードしてキャッシュを作っておく(コントローラの挙動を再現)
+
+      character.retreat_round!
+
+      expect(character.buffs.map(&:remaining_rounds)).to eq([ 2 ])
     end
   end
 
@@ -153,6 +172,15 @@ RSpec.describe Character, type: :model do
       other_buff = create(:buff, character: other_character, active: true, duration_rounds: 3, remaining_rounds: 1)
       character.reset_round!
       expect(other_buff.reload.remaining_rounds).to eq(1)
+    end
+
+    it "buffsをロード済みの状態でも、同一リクエスト内で最新のactive状態が読めるか(association cacheが古いままにならないか)" do
+      create(:buff, character: character, active: true, duration_rounds: 3, remaining_rounds: 1)
+      character.buffs.load # 事前ロードしてキャッシュを作っておく(コントローラの挙動を再現)
+
+      character.reset_round!
+
+      expect(character.buffs.map(&:active)).to eq([ false ])
     end
   end
 
