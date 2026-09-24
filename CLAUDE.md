@@ -6,91 +6,93 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 [kouta-wolf/vitals-roll](https://github.com/kouta-wolf/vitals-roll)
 
-Issue は `#番号` で参照できる（例: #55）。ユーザーが `#番号` でIssueに言及した場合は `docs/issues.json` を読んで内容を確認すること。Issue一覧は `gh issue list` で随時最新化できる。
+SW2.5（ソード・ワールド2.5）のオンラインセッション中にバフの残りラウンドを管理し、バフ反映済みの判定式をクリップボードへコピーするRailsアプリ。サービスの背景・想定ユーザー・機能スコープは `README.md` に詳しい。
 
-## 開発環境の起動
+Issue は `#番号` で参照できる（例: #55）。ユーザーが `#番号` で言及した場合は `docs/issues.json` を読む。一覧の最新化は `gh issue list`。
 
-Docker を使った開発環境:
-
-```bash
-docker compose up
-```
-
-アクセス: http://localhost:3000
-
-ローカルで直接起動する場合（PostgreSQL が別途必要）:
+## 開発環境
 
 ```bash
-bin/dev
+docker compose up          # http://localhost:3000（db: postgres:17.9 も同時起動）
+bin/dev                    # ローカル直接起動（別途PostgreSQLが必要）
 ```
 
-`bin/dev` は `Procfile.dev` に基づき、Railsサーバー・esbuild（JS）・TailwindCSS（CSS）の3プロセスを同時起動する。
+`bin/dev` は `Procfile.dev` に従い Rails server / esbuild（`yarn build --watch`）/ TailwindCSS CLI（`yarn build:css --watch`）の3プロセスを起動する。JS・CSSは `app/assets/builds/` へビルドされ、Propshaftが配信する。
+
+DB接続は `DB_HOST` / `DB_USERNAME` / `DB_PASSWORD` の環境変数（`.env.example` 参照）。
+
+開発環境のメールは letter_opener_web で `/letter_opener` から確認する。
 
 ## よく使うコマンド
 
 ```bash
-# DB操作
-bin/rails db:prepare       # DB作成＋マイグレーション（初回セットアップ）
+# DB
+bin/rails db:prepare       # 初回セットアップ
 bin/rails db:migrate
-bin/rails db:seed
+bin/rails db:seed          # バフプリセット（本番共通）＋ development用テストユーザー
 
 # テスト
-bundle exec rspec                       # 全テスト
-bundle exec rspec spec/models/          # ディレクトリ指定
-bundle exec rspec spec/requests/user_spec.rb # 単一ファイル
+bundle exec rspec
+bundle exec rspec spec/models/
+bundle exec rspec spec/models/character_spec.rb
+bundle exec rspec spec/models/character_spec.rb:42   # 行番号指定で単一example
 
 # Lint / セキュリティ
-bin/rubocop                # コードスタイル検査
-bin/rubocop -a             # 自動修正
-bin/brakeman --no-pager    # Railsセキュリティ静的解析
-bin/bundler-audit          # Gemの既知脆弱性チェック
+bin/rubocop                # rubocop-rails-omakase ベース
+bin/rubocop -a
+bin/brakeman --no-pager
+bin/bundler-audit
 ```
 
-## アーキテクチャ概要
+## 技術スタック
 
-### 技術スタック
+Rails 8.1 / Ruby 3.4 / PostgreSQL 17 / Hotwire（Turbo + Stimulus）/ esbuild / TailwindCSS 4 / Devise（+ devise-i18n, rails-i18n で日本語化）/ Kaminari。テストは RSpec + FactoryBot + Faker（Capybara・selenium-webdriver はGemfileにあるが `spec/system` は未作成）。
 
-- **Rails 8.1.3** / Ruby 3.4.x
-- **フロントエンド**: Hotwire（Turbo + Stimulus）、esbuild（JSバンドル）、TailwindCSS 4.3.1
-- **DB**: PostgreSQL 17.9
-- **認証**: Devise（予定）
-- **テスト**: RSpec（rspec-rails）+ FactoryBot + Faker + Capybara + Selenium
+## ドメインモデル
 
-RuboCop は `rubocop-rails-omakase` をベースにしている（`.rubocop.yml` 参照）。
-
-### ドメインモデル
-
-このアプリの中心的なデータモデル（`docs/ER.md` 参照）:
+`docs/ER.md` 参照。中心は5テーブル。
 
 | テーブル | 役割 |
 |---|---|
-| `users` | Devise 認証ユーザー |
-| `characters` | SW2.5キャラクター。基本ステータス6種 + 防護点 + `current_rounds`を保持 |
-| `weapons` | キャラクター所有の武器（威力・クリティカル値・固定値・命中補正） |
-| `buff_presets` | アプリ全体で共有するバフの雛形。`character_id`を持たない |
-| `buffs` | キャラクターに実際にかかっているバフの実体。`buff_preset_id`は任意（カスタムバフはnull） |
+| `users` | Devise認証ユーザー |
+| `characters` | 基本ステータス6種 + 防護点 + `current_rounds` |
+| `weapons` | 武器（威力・クリティカル値・固定値・命中補正） |
+| `buff_presets` | アプリ全体で共有するバフの雛形（`character_id` を持たないマスターデータ） |
+| `buffs` | キャラクターにかかっているバフの実体（`buff_preset_id` は任意、カスタムバフはnull） |
 
-重要な設計上の注意:
+### 判定式の組み立て（`Character`）
 
-- **`buff_presets` と `buffs` の分離**: `buff_presets` はグローバルなマスターデータ。`buffs` はキャラクター毎のインスタンスで、`active`（オン/オフ）と `remaining_rounds`（残ラウンド数）を独自に持つ。
-- **`current_rounds`**: 現在は `characters` テーブルに持たせているが、将来の複数人セッション機能追加時に `sessions` テーブルへ移行予定。
-- **`special_type`**: 通常の `bonus_value` では表現できない特殊処理（クリティカル値変更・ダイス目固定など）を文字列enumで区別するカラム。判定式組み立てロジックで参照する。
-- **`active`**: バフのオン/オフを切り替えて一時的に無効化する。`false` のバフは判定式の計算から除外される。
+判定式ロジックはすべて `app/models/character.rb` に集約されている。
 
-### アプリケーションの主要機能（MVP）
+- `hit_formula(weapon)` → `2d6+<冒険者レベル+DEXボーナス+命中補正>+<DEXバフ合計>`
+- `attack_formula(weapon)` → `k<威力>[<クリティカル値>]+<固定値+STR/damageバフ合計><特殊トークン>`
 
-1. キャラクターのCRUD
-2. バフの登録（プリセット選択 or 手動登録）・オン/オフ切り替え
-3. ラウンド進行 → `buffs.remaining_rounds` の自動減算、0になると自動オフ
-4. バフ反映済み判定式（SW2.5形式: `k30(威力)[クリティカル値]+固定値+バフ合計`）のクリップボードコピー
+計算上の重要なルール:
 
-Turbo Streams によるラウンド進行・バフ状態のリアルタイム更新が実装の核となる。
+- **`value_kind`**: `fixed` はそのまま加算、`ability`（能力値そのものを上げるバフ）は合計を6で割った商（ボーナス換算）を加算する。
+- **`special_type`**: 通常の `bonus_value` 加算で表現できない特殊バフ。判定式の末尾へトークンをポン付けする（`critical_ray` → `$+x`、`kubikari` → `r5`、`dice_fix` → `$x`）。integerではなくstring enumで保存しているのは、後から並べ替えてもズレず管理人がDBを直読みして意味が分かるようにするため。
+- **`active`**: `false` のバフは判定式から除外される。**新規登録・更新の直後は必ず `active: false`**（`BuffPreset#build_buff_for` / `BuffsController#create_buff_manual` / `#resynced_attrs`）。ユーザーが明示的にトグルするまで判定式が黙って変わらないようにするための仕様。
+- **ラウンド進行**: `Character#advance_round!` / `#retreat_round!` / `#reset_round!` が `buffs.remaining_rounds` を増減し、0になると `active: false` に落ちる。`remaining_rounds` が nil のバフは無限持続として増減対象外。
 
-### CI（GitHub Actions）
+### バフのプリロード規約（壊しやすい箇所）
 
-PRおよび`main`へのpushで以下が自動実行される（`.github/workflows/ci.yml`）:
+判定式を描画する経路では、アクション前に `Character#preload_buffs_with_preset!` を必ず呼ぶ（`CharactersController#show/advance_round/retreat_round/reset_round`、`BuffsController#toggle` の `before_action`）。理由:
 
-1. `scan_ruby`: Brakeman + bundler-audit
-2. `lint`: RuboCop
-3. `rspec`: RSpec（PostgreSQL サービスコンテナあり）
-4. `system-test`: Capybara（失敗時スクリーンショットをアーティファクト保存）
+- `Character` 内のバフ集計（`buff_total_for` / `special_buff_for` / `active_timed_buffs`）は **すべてロード済み `buffs` 配列に対するメモリ内走査**。`where` で取り直すと別インスタンスになり、更新がassociationキャッシュへ反映されず古い値で判定式が組まれる。
+- プリロードを忘れるとN+1が復活する（`buff_preset` 参照でバフ件数分のクエリ）。
+- `set_character` で取得済みのインスタンスには `includes` が効かないため `ActiveRecord::Associations::Preloader` を使っている。
+- `has_many :buffs` の `inverse_of: :character` により `@character.buffs.find(id)` がSQLを投げずプリロード済み配列と同一インスタンスを返す。`BuffsController#toggle` はこれに依存している。
+
+### Turbo Streams
+
+ラウンド進行とバフのトグルは Turbo Stream で部分更新する（`format.turbo_stream` + `format.html` のフォールバック）。更新対象は `dom_id(character, :round)` / `dom_id(character, :buffs_list)` / `dom_id(character, :formula)` / `dom_id(buff)` の4つ。判定式パーシャルは `turbo_frame_tag` で囲まれ、コピーは Stimulus の `clipboard_controller.js` が担当する。
+
+### 認証
+
+`ApplicationController` で全ページ `authenticate_user!`（Deviseコントローラは除外）。公開ページは `TopController#index` と `PagesController`（利用規約・プライバシー・問い合わせ・ガイド）で個別に `skip_before_action` している。キャラクター取得は必ず `current_user.characters.find(...)` 経由。
+
+## CI / デプロイ
+
+PR と `main` への push で `.github/workflows/ci.yml` が3ジョブを実行する: `scan_ruby`（Brakeman + bundler-audit）、`lint`（RuboCop）、`rspec`（PostgreSQLサービスコンテナ + yarn build / build:css の後に実行）。
+
+本番は Render（Web）+ Neon（PostgreSQL）で、構成は `render.yaml`、手順は `docs/deploy.md`。メール送信は Render が SMTP ポートを遮断するため Resend の HTTP API（`config.action_mailer.delivery_method = :resend`）を使う。
