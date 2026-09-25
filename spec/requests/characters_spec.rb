@@ -64,6 +64,13 @@ RSpec.describe "Characters", type: :request do
         get new_character_path
         expect(response.body).to include("キャラクター名")
       end
+
+      it "レベルと防護点にDBのカラムデフォルトが入っている" do
+        get new_character_path
+        html = Nokogiri::HTML(response.body)
+        expect(html.at_css("#character_main_class_level")["value"]).to eq("1")
+        expect(html.at_css("#character_defense")["value"]).to eq("0")
+      end
     end
   end
 
@@ -192,6 +199,15 @@ RSpec.describe "Characters", type: :request do
         get edit_character_path(user_character)
         expect(response.body).to include("テスター・ドラゴン")
         expect(response.body).to include("テストドレイク")
+      end
+
+      # フォームに value: をハードコードすると保存済みの値が初期値で上書きされるため、
+      # 新規作成時の初期値と異なる値で反映を検証する
+      it "保存済みのレベルと防護点がフォームに反映される" do
+        get edit_character_path(user_character)
+        html = Nokogiri::HTML(response.body)
+        expect(html.at_css("#character_main_class_level")["value"]).to eq("3")
+        expect(html.at_css("#character_defense")["value"]).to eq("4")
       end
 
       it "他のユーザーのキャラを閲覧できない" do
