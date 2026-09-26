@@ -35,6 +35,28 @@ describe("mountAll", () => {
     })
   })
 
+  // Turbo Stream がマウント先を含む領域を差し替えるとDOMから外れるが、
+  // その経路では turbo:before-cache が発火しないため Root が取り残される
+  it("DOMから外れた要素のRootを解放し、戻ってきたら再マウントする", async () => {
+    const element = document.createElement("div")
+    element.setAttribute("data-react-root", "")
+    document.body.appendChild(element)
+
+    await act(async () => {
+      expect(mountAll()).toBe(1)
+    })
+
+    element.remove()
+    await act(async () => {
+      expect(mountAll()).toBe(0)
+    })
+
+    document.body.appendChild(element)
+    await act(async () => {
+      expect(mountAll()).toBe(1)
+    })
+  })
+
   it("unmountAll の後は再びマウントできる", async () => {
     document.body.innerHTML = '<div data-react-root></div>'
 
