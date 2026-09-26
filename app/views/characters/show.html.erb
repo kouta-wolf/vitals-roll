@@ -10,9 +10,10 @@
 
   <div class="flex gap-4 flex-1 m-4">
     <div class="flex flex-col gap-4 flex-1">
-      <%# Reactのマウント先。#160 でラウンド管理・バフ一覧・判定式をここへ集約する。
-          現時点では何も描画しないため表示は変わらない %>
-      <div data-react-root></div>
+      <%# Reactのマウント先。#160 でラウンド管理・バフ一覧・判定式をここへ集約し、その際 hidden を外す。
+          親が flex flex-col gap-4 のため、hidden が無いと空のdivでも flex item として
+          gap 1rem 分の余白を作ってしまう %>
+      <div data-react-root hidden></div>
 
       <section class="p-4 border border-gray-300">
         <h2 class="text-2xl">ラウンド管理</h2>
