@@ -7,6 +7,8 @@ const roots = new Map<Element, Root>()
 // `data-react-root` を持つ要素すべてにマウントし、新しくマウントした数を返す。
 // 既にマウント済みの要素は飛ばすため、同じページで複数回呼ばれても二重描画にならない。
 export function mountAll(): number {
+  releaseDetachedRoots()
+
   let mounted = 0
 
   document.querySelectorAll<HTMLElement>("[data-react-root]").forEach((element) => {
@@ -19,6 +21,20 @@ export function mountAll(): number {
   })
 
   return mounted
+}
+
+// DOMから外れた要素のRootを解放する。
+// unmountAll は turbo:before-cache に紐づいているが、このイベントは
+// ページがキャッシュ可能なときにしか発火しない。turbo-cache-control: no-cache の
+// ページや、Turbo Streamがマウント先を含む領域を差し替えた場合には呼ばれないため、
+// ここで取りこぼしを回収しないとRootと要素が解放されずに残り続ける。
+function releaseDetachedRoots(): void {
+  roots.forEach((root, element) => {
+    if (element.isConnected) return
+
+    root.unmount()
+    roots.delete(element)
+  })
 }
 
 // Turbo Drive はページを離れる前にDOMのスナップショットを取ってキャッシュする。
