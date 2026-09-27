@@ -2,8 +2,12 @@ import { afterEach, describe, expect, it } from "vitest"
 import { act } from "react"
 import { mountAll, unmountAll } from "./mount"
 
-afterEach(() => {
-  unmountAll()
+afterEach(async () => {
+  // act で包まないと「An update to Root inside a test was not wrapped in act(...)」が
+  // 直前のテストの出力として混ざり、本当の問題を見落としやすくなる
+  await act(async () => {
+    unmountAll()
+  })
   document.body.innerHTML = ""
 })
 
