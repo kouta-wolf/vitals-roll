@@ -21,6 +21,6 @@
   "include": [
     "app/javascript/**/*.ts",
     "app/javascript/**/*.tsx",
-    "vitest.config.ts"
+    "vitest.config.mts"
   ]
 }
