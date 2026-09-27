@@ -50,6 +50,29 @@ jobs:
       - name: Lint code for consistent style
         run: bin/rubocop -f github
 
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: yarn
+
+      - name: Install JS dependencies
+        run: yarn install --frozen-lockfile
+
+      # esbuild も Vite も型注釈を剥がすだけで型検査はしないため、ここで明示的に検査する
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Run Vitest
+        run: yarn test
+
   rspec:
     runs-on: ubuntu-latest
 
