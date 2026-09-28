@@ -56,6 +56,11 @@ export interface Weapon {
   fixedHitRate: number
 }
 
+// mainClassLevel / defense / currentRounds は現状DB側に NOT NULL 制約が無く、
+// Rails側のバリデーションも掛かっていないため NULL を保存できてしまう（#168）。
+// ここでは「シリアライザが必ず整数を渡す」ことを型の約束として non-nullable にしている。
+// 約束が破れると判定式が NaN を含んだまま静かに壊れるため、#168 をDB/モデル側で
+// 先に解消しておくこと。
 export interface Character {
   id: number
   name: string
@@ -72,6 +77,18 @@ export interface Character {
   currentRounds: number
 }
 
+// Ruby の String#presence 相当。空文字と空白のみの文字列は「無い」とみなす
+function presence(value: string | null): string | null {
+  return value !== null && value.trim() !== "" ? value : null
+}
+
+// Rails側の Buff#display_name（name.presence || buff_preset&.name）と揃える。
+// ?? だけだと name が空文字のときにプリセット名へ落ちず、Railsと表示が食い違う。
+//
+// 戻り値だけは意図的に揃えていない。Railsは両方無いとき nil を返すが、
+// ERBでは nil も空文字として描画されるため表示は同じで、TS側は string で
+// 扱えたほうが呼び出し側が楽なため "" を返す。なお name もプリセットも無い
+// 状態は Buff の presence バリデーションにより保存できない。
 export function buffDisplayName(buff: Buff): string {
-  return buff.name ?? buff.buffPreset?.name ?? ""
+  return presence(buff.name) ?? buff.buffPreset?.name ?? ""
 }
