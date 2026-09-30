@@ -9,11 +9,15 @@ class Character < ApplicationRecord
   validates :dexterity, :agility, :strength, :vitality, :intelligence, :spirit,
             presence: true, numericality: { only_integer: true, in: 1..999 }
   # DBのデフォルト値だけに頼るとフォームの空欄送信でNULLが入り、hit_formulaが
-  # NoMethodErrorで落ちて詳細ページが500になる(#168)。範囲はフォームの入力制約に揃える
-  validates :main_class_level, presence: true, numericality: { only_integer: true, in: 1..15 }
-  validates :defense, presence: true, numericality: { only_integer: true, in: 0..999 }
-  # current_roundsは上限を設けない。advance_round!のincrement!はバリデーションを通らないため、
-  # 上限を付けると「増やせるのに保存し直すと弾かれる」状態を作ってしまう
+  # NoMethodErrorで落ちて詳細ページが500になる(#168)。
+  #
+  # 上限は敢えて設けていない。reset_round! の update! は全属性のバリデーションを走らせるため、
+  # 上限を超えた既存行があると「ラウンドをリセット」だけが500になる。
+  # advance_round!/retreat_round! は increment!/decrement! でバリデーションを通らないので
+  # 成功する、という非対称な壊れ方をして原因を追いにくい。
+  # 入力ミス対策として上限を入れる場合は、既存データを確認したうえで別途行う。
+  validates :main_class_level, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
+  validates :defense, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :current_rounds, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 
   def advance_round!
