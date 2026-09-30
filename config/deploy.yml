@@ -43,7 +43,12 @@ env:
   clear:
     # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
     # When you start using multiple servers, you should split out job processing to a dedicated machine.
-    SOLID_QUEUE_IN_PUMA: true
+    #
+    # 本番では solid_queue を使わない方針にしたため無効化している(#170)。
+    # 有効にすると config/puma.rb の plugin :solid_queue が起動し、存在しない
+    # solid_queue_* テーブルを叩いて落ちる。再度使う場合は #170 の判断
+    # （Neon無料枠の月100 CU-hoursをポーリングで使い切る問題）から見直すこと。
+    # SOLID_QUEUE_IN_PUMA: true
 
     # Set number of processes dedicated to Solid Queue (default: 1)
     # JOB_CONCURRENCY: 3
