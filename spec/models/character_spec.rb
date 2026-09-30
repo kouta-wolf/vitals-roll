@@ -71,7 +71,6 @@ RSpec.describe Character, type: :model do
       expect(character.errors[:dexterity]).to be_present
     end
 
-    # 範囲はフォームの入力制約(min: 1, max: 15)およびseedsのrand(1..15)に揃えている
     it "レベルが0なら無効になるか" do
       character = build(:character, main_class_level: 0)
       expect(character).to be_invalid
@@ -86,10 +85,14 @@ RSpec.describe Character, type: :model do
       expect(build(:character, main_class_level: 15)).to be_valid
     end
 
-    it "レベルが16なら無効になるか" do
-      character = build(:character, main_class_level: 16)
-      expect(character).to be_invalid
-      expect(character.errors[:main_class_level]).to be_present
+    # 上限は敢えて設けていない。上限を超えた既存行があると reset_round! の update! だけが
+    # 500になる非対称な壊れ方をするため（詳細は Character のコメント参照）
+    it "レベルがフォームの上限(15)を超えていても有効になるか" do
+      expect(build(:character, main_class_level: 16)).to be_valid
+    end
+
+    it "防護点が1000でも有効になるか（上限を設けていないため）" do
+      expect(build(:character, defense: 1000)).to be_valid
     end
 
     it "防護点が0なら有効になるか" do
