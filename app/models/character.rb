@@ -8,6 +8,13 @@ class Character < ApplicationRecord
   validates :name, presence: true
   validates :dexterity, :agility, :strength, :vitality, :intelligence, :spirit,
             presence: true, numericality: { only_integer: true, in: 1..999 }
+  # DBのデフォルト値だけに頼るとフォームの空欄送信でNULLが入り、hit_formulaが
+  # NoMethodErrorで落ちて詳細ページが500になる(#168)。範囲はフォームの入力制約に揃える
+  validates :main_class_level, presence: true, numericality: { only_integer: true, in: 1..15 }
+  validates :defense, presence: true, numericality: { only_integer: true, in: 0..999 }
+  # current_roundsは上限を設けない。advance_round!のincrement!はバリデーションを通らないため、
+  # 上限を付けると「増やせるのに保存し直すと弾かれる」状態を作ってしまう
+  validates :current_rounds, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 
   def advance_round!
     increment!(:current_rounds)
