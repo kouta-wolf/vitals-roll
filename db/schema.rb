@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_30_004825) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_30_014500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -45,12 +45,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_30_004825) do
   create_table "characters", force: :cascade do |t|
     t.integer "agility", null: false
     t.datetime "created_at", null: false
-    t.integer "current_rounds", default: 1
-    t.integer "defense", default: 0
+    t.integer "current_rounds", default: 1, null: false
+    t.integer "defense", default: 0, null: false
     t.integer "dexterity", null: false
     t.integer "intelligence", null: false
     t.string "main_class"
-    t.integer "main_class_level", default: 1
+    t.integer "main_class_level", default: 1, null: false
     t.string "name", null: false
     t.string "race"
     t.integer "spirit", null: false
