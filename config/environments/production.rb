@@ -46,12 +46,23 @@ Rails.application.configure do
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 
-  # Replace the default in-process memory cache store with a durable alternative.
-  config.cache_store = :solid_cache_store
+  # キャッシュ・ジョブ・Action Cable は、いずれもDBを使わない構成にしている（#170）。
+  #
+  # 本番DBは Neon の無料プラン（月100 CU-hours ≒ 0.25CUで約400時間）。1か月は約730時間
+  # あるため、DBをポーリングし続ける構成にするとcomputeがスリープせず16〜17日で枠を
+  # 使い切る。solid_queue は0.1〜1秒間隔、solid_cable は0.1秒間隔でポーリングするため
+  # 本番では採用しない。solid_cache はポーリングしないが、キャッシュの読み書きのたびに
+  # Neonのcomputeを消費するため同様に避ける。
+  #
+  # config/puma.rb は workers を設定しておらず単一プロセスのため、
+  # プロセス内に閉じた :memory_store / :async でも全スレッドから共有できる。
 
-  # Replace the default in-process and non-durable queuing backend for Active Job.
-  config.active_job.queue_adapter = :solid_queue
-  config.solid_queue.connects_to = { database: { writing: :queue } }
+  config.cache_store = :memory_store
+
+  # :async は Puma のプロセス内で実行するためDBを使わない。
+  # 再起動やデプロイの瞬間にキューイング済みのジョブは失われるが、現状 Devise は
+  # deliver_now で送っており、将来使うとしてもパスワード再設定メール程度のため許容する。
+  config.active_job.queue_adapter = :async
 
   # Raise delivery errors so failures are visible instead of silently dropped.
   config.action_mailer.raise_delivery_errors = true

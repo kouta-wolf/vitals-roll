@@ -87,16 +87,10 @@ test:
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
+# cache / queue / cable の接続は定義していない。これらはDBを使わないアダプタに
+# 切り替えたため参照されず、残しておくと db:prepare が無駄に3接続ぶん動くうえ、
+# 「設定はあるがテーブルは無い」という #170 の状態を再び作ることになる。
 production:
-  primary: &primary_production
+  primary:
     <<: *default
     url: <%= ENV["DATABASE_URL"] %>
-  cache:
-    <<: *primary_production
-    migrations_paths: db/cache_migrate
-  queue:
-    <<: *primary_production
-    migrations_paths: db/queue_migrate
-  cable:
-    <<: *primary_production
-    migrations_paths: db/cable_migrate
