@@ -11,6 +11,8 @@ development:
 test:
   <<: *default
 
+# database: cache は指定しない。solid_cache の railtie は cache_store の設定に関係なく
+# この値を解決しようとするため、database.yml に cache 接続が無いと起動時に
+# AdapterNotSpecified で落ちる。本番では :memory_store を使うため参照先も不要（#170）。
 production:
-  database: cache
   <<: *default

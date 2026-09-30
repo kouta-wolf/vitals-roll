@@ -23,29 +23,52 @@
    - `...?sslmode=require` が付いた形でOK
 3. 無料枠はアイドルで自動サスペンドするため、放置後の初回アクセスは数秒待たされる（仕様）
 
-## 2. database.yml（Rails 8 マルチDB → 単一DBへ集約）
+## 2. database.yml（Rails 8 マルチDB → primary のみへ集約）
 
-Rails 8 は `primary` / `cache`（solid_cache）/ `queue`（solid_queue）/ `cable`（solid_cable）の
-4つのDBを使う構成になっている。Neon 無料枠はDB1つなので、4接続すべてを同じ `DATABASE_URL` に向ける。
-solid系はテーブル名が異なるため同一DBに同居できる。
+Rails 8 の既定では `primary` / `cache`（solid_cache）/ `queue`（solid_queue）/ `cable`（solid_cable）の
+4接続を使う構成になっているが、**本番ではこれらのsolid系を使わない方針にしたため `primary` だけを定義する**（#170）。
 
 ```yaml
 production:
-  primary: &primary_production
+  primary:
     <<: *default
     url: <%= ENV["DATABASE_URL"] %>
-  cache:
-    <<: *primary_production
-    migrations_paths: db/cache_migrate
-  queue:
-    <<: *primary_production
-    migrations_paths: db/queue_migrate
-  cable:
-    <<: *primary_production
-    migrations_paths: db/cable_migrate
 ```
 
 > development / test には影響しない（変更したのは production ブロックのみ）。
+
+### なぜ solid 系を使わないのか
+
+Neon 無料プランの compute は **月100 CU-hours**（0.25 CU換算で約400時間）だが、1か月は約730時間ある。
+つまり**DBを起こし続ける構成にすると16〜17日で枠を使い切る**。
+
+- `solid_queue` は dispatcher が1秒間隔、worker が0.1秒間隔でDBをポーリングする
+- `solid_cable` は購読が発生すると `polling_interval` 間隔でポーリングする
+- `solid_cache` はポーリングしないが、キャッシュの読み書きのたびに compute を消費する
+
+そのため `config/environments/production.rb` と `config/cable.yml` でDBを使わないアダプタに寄せている。
+
+| 対象 | 本番の設定 |
+|---|---|
+| Cache | `:memory_store` |
+| Active Job | `:async` |
+| Action Cable | `async` |
+
+`config/puma.rb` は `workers` を設定しておらず単一プロセスで動くため、プロセス内に閉じたこれらのアダプタでも
+全スレッドから共有できる。`:async` は再起動・デプロイ時にキューイング済みジョブを失うが、
+現状メールは Devise が `deliver_now` で送っているため影響しない。
+
+### 注意点
+
+- **`config/cache.yml` の production に `database: cache` を書かないこと。** `solid_cache` の railtie は
+  `cache_store` の設定に関係なくこの値を解決するため、`database.yml` に `cache` 接続が無い状態で残すと
+  本番起動時に `ActiveRecord::AdapterNotSpecified` で落ちる。
+- **Kamal を使う場合は `config/deploy.yml` の `SOLID_QUEUE_IN_PUMA` を有効にしないこと。**
+  `config/puma.rb` の `plugin :solid_queue` が Supervisor を起動し、存在しない `solid_queue_*` テーブルを
+  叩いて落ちる。
+- 将来ジョブやAction Cableを本格的に使う場合は、上記のNeonの枠を踏まえて有料プランへの移行とあわせて
+  判断する。テーブルだけ用意してワーカーを動かさない構成は、`deliver_later` が enqueue に成功したまま
+  永久に実行されず**エラーも出ずにメールだけ消える**ため避ける。
 
 ## 3. render.yaml
 
@@ -116,4 +139,4 @@ JS/CSS は jsbundling(esbuild) + cssbundling(tailwind) を使っており、`ass
 
 - **Puma の警告** `Detected running cluster mode with 1 worker.` は無害。
   メモリ節約のためシングルモードにするなら `WEB_CONCURRENCY=0` を設定する（無料枠なら任意）。
-- `db:prepare` は4DB分のマイグレーションを実行する。マイグレーション追加時は再デプロイで自動反映される。
+- `db:prepare` は `primary` のマイグレーションを実行する。マイグレーション追加時は再デプロイで自動反映される。
