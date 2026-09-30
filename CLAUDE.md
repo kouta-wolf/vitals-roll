@@ -48,6 +48,24 @@ bin/bundler-audit
 
 Rails 8.1 / Ruby 3.4 / PostgreSQL 17 / Hotwire（Turbo + Stimulus）/ esbuild / TailwindCSS 4 / Devise（+ devise-i18n, rails-i18n で日本語化）/ Kaminari。テストは RSpec + FactoryBot + Faker（Capybara・selenium-webdriver はGemfileにあるが `spec/system` は未作成）。
 
+## コーディング規約（Rails）
+
+### 生SQLを書かない
+
+`execute` / `find_by_sql` / `exec_query`、および `where("...")` `order("...")` のような文字列条件は使わず、ActiveRecord のクエリメソッドで書く。Railsが備えるプレースホルダのエスケープと識別子のクォートが効かなくなるため。範囲条件は終端のみのRange（`where(level: ..0)` → `level <= 0`、`where(level: ...0)` → `level < 0`）で表現できる。
+
+どうしても必要な場合は、値はプレースホルダ（`where("x > ?", v)`）で渡し、ユーザー入力を `Arel.sql` に通さない。採用理由と代替案をコメントに残す。
+
+### マイグレーションでアプリのモデルを使わない
+
+`default_scope` やバリデーションの追加、リネームで過去のマイグレーションが壊れるため。データの一括更新が必要なら、マイグレーション内に `self.table_name` を指定した専用モデルを定義して `update_all` を使う。
+
+### バリデーションを通らない更新に注意する
+
+`update_all` / `update_column` / `increment!` / `decrement!` / `insert_all` はバリデーションとコールバックを通らない。`update!` を使う箇所と混在させると、「片方の操作だけが `RecordInvalid` で落ちる」という非対称な壊れ方をする。
+
+実例（#168）: `Character#advance_round!` は `increment!` でバリデーションを通らないが、`#reset_round!` は `update!` で全属性を検証する。そのため属性に範囲バリデーションを足すと、範囲外の既存行では「ラウンドを進める」は成功するのに「リセット」だけが500になる。
+
 ## ドメインモデル
 
 `docs/ER.md` 参照。中心は5テーブル。
