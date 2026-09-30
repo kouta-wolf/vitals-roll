@@ -289,6 +289,26 @@ RSpec.describe "Characters", type: :request do
         it "更新出来ない場合、DBの値が変わっていない" do
           expect { patch character_path(user_character), params: invalid_params }.not_to change { user_character.reload.name }
         end
+
+        # フォームの数値入力を空欄で送ると Rails が "" を nil にキャストする。
+        # 以前はバリデーションが無く NULL が保存され、main_class_level が nil になると
+        # hit_formula が NoMethodError で落ちて詳細ページが500になっていた（#168）
+        context "レベル・防護点が空欄で送信された場合" do
+          let(:blank_level_params) { { character: valid_params[:character].merge(main_class_level: "") } }
+          let(:blank_defense_params) { { character: valid_params[:character].merge(defense: "") } }
+
+          it "レベルが空欄なら422になり保存されない" do
+            expect { patch character_path(user_character), params: blank_level_params }
+              .not_to change { user_character.reload.main_class_level }
+            expect(response).to have_http_status(422)
+          end
+
+          it "防護点が空欄なら422になり保存されない" do
+            expect { patch character_path(user_character), params: blank_defense_params }
+              .not_to change { user_character.reload.defense }
+            expect(response).to have_http_status(422)
+          end
+        end
       end
 
       context "認可チェック" do
