@@ -106,25 +106,28 @@ describe("useCombatStateSave", () => {
   })
 
   describe("失敗時", () => {
-    it("422では未保存になり、再試行しない", async () => {
+    // 4xx は内容が変わらない限り結果が同じなので再試行しない。
+    // 「再試行中」と表示すると放置すれば保存されると誤解させるため failed にする
+    it("422ではfailedになり、再試行しない", async () => {
       fetchMock.mockResolvedValue({ ok: false, status: 422 })
       const { result, rerender } = renderSave(buildState(0))
 
       act(() => { rerender({ state: buildState(1, 2) }) })
       await act(async () => { vi.advanceTimersByTime(DEBOUNCE_MS) })
-      expect(result.current).toBe("unsaved")
+      expect(result.current).toBe("failed")
 
       await act(async () => { vi.advanceTimersByTime(RETRY_MS * 3) })
       expect(fetchMock).toHaveBeenCalledTimes(1)
     })
 
-    it("500では再試行する", async () => {
+    it("500ではretryingになり再試行する", async () => {
       fetchMock.mockResolvedValue({ ok: false, status: 500 })
-      const { rerender } = renderSave(buildState(0))
+      const { result, rerender } = renderSave(buildState(0))
 
       act(() => { rerender({ state: buildState(1, 2) }) })
       await act(async () => { vi.advanceTimersByTime(DEBOUNCE_MS) })
       expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(result.current).toBe("retrying")
 
       await act(async () => { vi.advanceTimersByTime(RETRY_MS) })
       expect(fetchMock).toHaveBeenCalledTimes(2)
@@ -136,10 +139,25 @@ describe("useCombatStateSave", () => {
 
       act(() => { rerender({ state: buildState(1, 2) }) })
       await act(async () => { vi.advanceTimersByTime(DEBOUNCE_MS) })
-      expect(result.current).toBe("unsaved")
+      expect(result.current).toBe("retrying")
 
       await act(async () => { vi.advanceTimersByTime(RETRY_MS) })
       expect(fetchMock).toHaveBeenCalledTimes(2)
+    })
+
+    // 再試行タイマーを追跡していないと、離脱したページの状態を保存してしまう
+    it("アンマウント後は再試行しない", async () => {
+      fetchMock.mockResolvedValue({ ok: false, status: 500 })
+      const { rerender, unmount } = renderSave(buildState(0))
+
+      act(() => { rerender({ state: buildState(1, 2) }) })
+      await act(async () => { vi.advanceTimersByTime(DEBOUNCE_MS) })
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+
+      unmount()
+      await act(async () => { vi.advanceTimersByTime(RETRY_MS * 3) })
+
+      expect(fetchMock).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -151,18 +169,10 @@ describe("useCombatStateSave", () => {
       act(() => { window.dispatchEvent(new Event("pagehide")) })
 
       expect(beaconMock).toHaveBeenCalledTimes(1)
-      const [ , blob ] = beaconMock.mock.calls[0] ?? []
+      const [ url, blob ] = beaconMock.mock.calls[0] ?? []
+      // sendBeacon は必ずPOSTで送るため、ルーティング側でPOSTを受けている必要がある
+      expect(url).toBe(SAVE_URL)
       expect((blob as Blob).type).toBe("application/json")
-    })
-
-    // Turbo Drive の遷移では pagehide が発火しない
-    it("turbo:before-visitでも送る", async () => {
-      const { rerender } = renderSave(buildState(0))
-      act(() => { rerender({ state: buildState(1, 3) }) })
-
-      act(() => { document.dispatchEvent(new Event("turbo:before-visit")) })
-
-      expect(beaconMock).toHaveBeenCalledTimes(1)
     })
 
     it("未保存の変更が無ければ送らない", () => {
@@ -170,6 +180,52 @@ describe("useCombatStateSave", () => {
       act(() => { window.dispatchEvent(new Event("pagehide")) })
 
       expect(beaconMock).not.toHaveBeenCalled()
+    })
+  })
+
+  // Turboはフォーム送信のレスポンス（新しいページのHTML）を受け取ってから
+  // visitを提案するため、turbo:before-visit では保存が間に合わない。
+  // before-fetch-request で pause/resume してリクエスト自体を待たせる
+  describe("Turboのリクエストを待たせる", () => {
+    function dispatchBeforeFetch(resume: () => void): CustomEvent {
+      const event = new CustomEvent("turbo:before-fetch-request", { detail: { resume }, cancelable: true })
+      document.dispatchEvent(event)
+      return event
+    }
+
+    it("未保存の変更があれば保存してから再開させる", async () => {
+      const { rerender } = renderSave(buildState(0))
+      act(() => { rerender({ state: buildState(1, 3) }) })
+
+      const resume = vi.fn()
+      let event!: CustomEvent
+      await act(async () => { event = dispatchBeforeFetch(resume) })
+
+      expect(event.defaultPrevented).toBe(true)
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(resume).toHaveBeenCalledTimes(1)
+    })
+
+    it("保存が失敗しても必ず再開させる（遷移を止めない）", async () => {
+      fetchMock.mockRejectedValue(new Error("offline"))
+      const { rerender } = renderSave(buildState(0))
+      act(() => { rerender({ state: buildState(1, 3) }) })
+
+      const resume = vi.fn()
+      await act(async () => { dispatchBeforeFetch(resume) })
+
+      expect(resume).toHaveBeenCalledTimes(1)
+    })
+
+    it("未保存の変更が無ければ待たせない", () => {
+      renderSave(buildState(0))
+
+      const resume = vi.fn()
+      const event = dispatchBeforeFetch(resume)
+
+      expect(event.defaultPrevented).toBe(false)
+      expect(resume).not.toHaveBeenCalled()
+      expect(fetchMock).not.toHaveBeenCalled()
     })
   })
 })
