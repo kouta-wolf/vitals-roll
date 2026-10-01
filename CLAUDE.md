@@ -122,7 +122,9 @@ Vitest は `globals: false` のため **testing-library の自動クリーンア
 - **判定式とラウンド操作のロジックはTypeScript側が単一の正。** Ruby側の `Character#hit_formula` / `#advance_round!` 等は #160 で削除した。移植時に Ruby の実挙動と突き合わせており、`value_kind: ability` の換算は**合計してから÷6**、負数は `Math.trunc` ではなく **`Math.floor`**（Rubyの `Integer#/` が切り下げるため）。
 - **描画先はERB側に点在する。** `show.html.erb` の `#round-panel` / `#buff-list-panel` / `#formula-panel` へ `createPortal` で差し込む。単一のreducerで扱うためルートは1つ（`[data-react-root]`）に保つ。
 - **初期データは `data-combat-state` 属性で渡す。** Railsが属性値を自動エスケープするため `html_safe` が不要。
-- **保存は `authenticity_token` をJSONボディに含める。** `sendBeacon` はヘッダを付けられないため。`Blob` の `type` は `application/json` 必須（サーバ側はそれ以外を415で弾く）。
+- **保存は `authenticity_token` をJSONボディに含める。** `sendBeacon` はヘッダを付けられないため。`Blob` の `type` は `application/json` 必須（サーバ側はそれ以外を415で弾く）。また **`sendBeacon` は必ずPOSTで送る**ため、ルーティングは `PATCH|PUT|POST` を受ける。
+- **Turboの遷移は `turbo:before-fetch-request` で待たせてから保存する。** `turbo:before-visit` では間に合わない（Turboはフォーム送信のレスポンス＝新しいページのHTMLを受け取ってから visit を提案するため、サーバが古いDB状態で描画してしまう）。
+- **`show` は `turbo-cache-control: no-cache`。** キャッシュから復元されると `data-combat-state` が古いDB状態のまま復活し、次の操作で保存済みの値を上書きする。
 - **保存に失敗しても楽観的更新はロールバックしない。** 戦闘中にチェックが勝手に戻るのは体験を悪化させるため、「未保存」を表示して再試行する（#136 の決定）。
 - 送るスナップショットは**キーを省略しない**。`remaining_rounds` を落とすとサーバ側で更新されず、無限持続バフと区別できなくなる。
 
