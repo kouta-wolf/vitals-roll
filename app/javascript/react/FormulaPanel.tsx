@@ -17,6 +17,10 @@ export function FormulaPanel({ character, weapons, selectedWeapon, buffs, dispat
     return <p className="text-gray-500 mt-2">武器が登録されていません。判定式を表示するには武器を登録してください。</p>
   }
 
+  // 表示とコピーで同じ文字列を使う（二度評価すると乖離し得る）
+  const hit = hitFormula(character, selectedWeapon, buffs)
+  const attack = attackFormula(selectedWeapon, buffs)
+
   return (
     <div className="mt-2">
       <label className="block text-sm font-medium mb-1">武器選択</label>
@@ -39,13 +43,13 @@ export function FormulaPanel({ character, weapons, selectedWeapon, buffs, dispat
 
       <p className="mt-2 flex items-center gap-2">
         命中判定式:
-        <span>{hitFormula(character, selectedWeapon, buffs)}</span>
-        <CopyButton text={hitFormula(character, selectedWeapon, buffs)} />
+        <span>{hit}</span>
+        <CopyButton text={hit} />
       </p>
       <p className="mt-2 flex items-center gap-2">
         ダメージ判定式:
-        <span>{attackFormula(selectedWeapon, buffs)}</span>
-        <CopyButton text={attackFormula(selectedWeapon, buffs)} />
+        <span>{attack}</span>
+        <CopyButton text={attack} />
       </p>
     </div>
   )
