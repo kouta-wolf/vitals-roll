@@ -72,6 +72,26 @@ RSpec.describe "CombatStates", type: :request do
         expect(infinite.reload).to have_attributes(active: true, remaining_rounds: nil)
       end
 
+      # バフだけのスナップショットで current_rounds を無条件に代入すると nil になり、
+      # presence バリデーションでトランザクション全体がロールバックして
+      # バフの変更まで失われる
+      it "current_roundsを省略してもバフだけ更新できる" do
+        patch_snapshot({ buffs: [ { id: buff.id, active: true, remaining_rounds: 1 } ] })
+
+        expect(response).to have_http_status(204)
+        expect(buff.reload).to have_attributes(active: true, remaining_rounds: 1)
+        expect(character.reload.current_rounds).to eq(1)
+      end
+
+      # remaining_rounds を無条件に代入すると、省略時に nil（＝無限持続）になり
+      # 持続3ラウンドのバフが永続バフへ静かに化ける
+      it "remaining_roundsを省略したバフは残ラウンドが変わらない" do
+        patch_snapshot({ current_rounds: 2, buffs: [ { id: buff.id, active: true } ] })
+
+        expect(response).to have_http_status(204)
+        expect(buff.reload).to have_attributes(active: true, remaining_rounds: 3)
+      end
+
       it "buffsを省略してもcurrent_roundsだけ更新できる" do
         patch_snapshot({ current_rounds: 9 })
 
@@ -145,6 +165,19 @@ RSpec.describe "CombatStates", type: :request do
         end
       end
 
+      context "Content-Typeがapplication/jsonでない場合" do
+        # ボディの解析とCSRF検証が成立しないため受け付けない。
+        # フォームエンコードで届くと buffs が配列ではなくハッシュになり
+        # コントローラ内で NoMethodError(500) にもなり得る
+        it "415を返し、状態も変わらない" do
+          expect {
+            patch character_combat_state_path(character), params: { current_rounds: 9 }
+          }.not_to change { character.reload.current_rounds }
+
+          expect(response).to have_http_status(415)
+        end
+      end
+
       context "バリデーション違反の場合" do
         # remaining_rounds は 0..50
         let(:invalid_snapshot) do
@@ -175,6 +208,15 @@ RSpec.describe "CombatStates", type: :request do
         it "current_roundsが負の値なら422になる" do
           patch_snapshot({ current_rounds: -1 })
           expect(response).to have_http_status(422)
+        end
+
+        # current_rounds には上限バリデーションを置いていない(#168)ため、
+        # integerの範囲を超える値はDB書き込み時に ActiveModel::RangeError になる
+        it "current_roundsがintegerの範囲を超えていても500ではなく422になる" do
+          patch_snapshot({ current_rounds: 3_000_000_000 })
+
+          expect(response).to have_http_status(422)
+          expect(character.reload.current_rounds).to eq(1)
         end
 
         # activeはDBがNOT NULLなので、nilを許すとNotNullViolation(500)になる
