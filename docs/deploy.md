@@ -58,17 +58,19 @@ Neon 無料プランの compute は **月100 CU-hours**（0.25 CU換算で約400
 全スレッドから共有できる。`:async` は再起動・デプロイ時にキューイング済みジョブを失うが、
 現状メールは Devise が `deliver_now` で送っているため影響しない。
 
+この判断に伴い、**3つのgem自体も Gemfile から外してある**（#180）。あわせて `config/cache.yml` /
+`config/queue.yml` / `config/recurring.yml` / `bin/jobs` / `db/{cache,queue,cable}_schema.rb` と、
+`config/puma.rb` の `plugin :solid_queue` も削除済み。
+
 ### 注意点
 
-- **`config/cache.yml` の production に `database: cache` を書かないこと。** `solid_cache` の railtie は
-  `cache_store` の設定に関係なくこの値を解決するため、`database.yml` に `cache` 接続が無い状態で残すと
-  本番起動時に `ActiveRecord::AdapterNotSpecified` で落ちる。
-- **Kamal を使う場合は `config/deploy.yml` の `SOLID_QUEUE_IN_PUMA` を有効にしないこと。**
-  `config/puma.rb` の `plugin :solid_queue` が Supervisor を起動し、存在しない `solid_queue_*` テーブルを
-  叩いて落ちる。
+- **gemを戻す場合は、設定の整合性に注意すること。** `solid_cache` の railtie は `cache_store` の設定に
+  関係なく `config/cache.yml` の `database:` を解決するため、`database.yml` に対応する接続が無い状態で
+  書くと本番起動時に `ActiveRecord::AdapterNotSpecified` で落ちる（#170 で実際に踏んだ）。
 - 将来ジョブやAction Cableを本格的に使う場合は、上記のNeonの枠を踏まえて有料プランへの移行とあわせて
   判断する。テーブルだけ用意してワーカーを動かさない構成は、`deliver_later` が enqueue に成功したまま
-  永久に実行されず**エラーも出ずにメールだけ消える**ため避ける。
+  永久に実行されず**エラーも出ずにメールだけ消える**ため避ける。Action Cable については #181 に保留して
+  ある。
 
 ## 3. render.yaml
 
