@@ -14,6 +14,9 @@ Rails.application.routes.draw do
       end
     end
 
+    # 戦闘中の状態をスナップショットでまとめて保存する（#159）
+    resource :combat_state, only: [ :update ]
+
     member do
       patch :advance_round
       patch :retreat_round

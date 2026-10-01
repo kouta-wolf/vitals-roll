@@ -14,6 +14,9 @@ class Buff < ApplicationRecord
   # プリセット由来はbuff_preset.name経由で参照するためnameを持たない
   validates :name, presence: true, if: -> { buff_preset.nil? }
   validates :bonus_value, numericality: { only_integer: true, in: -999..999 }
+  # DBは NOT NULL なので、nil が来るとバリデーションを通らず NotNullViolation(500)になる。
+  # 外部から直接更新される経路(#159 の combat_state)があるため422で返せるようにする
+  validates :active, inclusion: { in: [ true, false ] }
   validates :duration_rounds, numericality: { only_integer: true, in: 0..50 }, allow_nil: true
   validates :remaining_rounds, numericality: { only_integer: true, in: 0..50 }, allow_nil: true
   # 通常バフのみtarget_status必須。特殊プリセット由来(special_type有り)は対象ステータスの概念が無いため不要
