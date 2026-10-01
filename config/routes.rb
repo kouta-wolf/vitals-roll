@@ -8,20 +8,10 @@ Rails.application.routes.draw do
 
   resources :characters do
     resources :weapons, only: [ :new, :create, :edit, :update, :destroy ]
-    resources :buffs, only: [ :new, :create, :edit, :update, :destroy ] do
-      member do
-        patch :toggle
-      end
-    end
+    resources :buffs, only: [ :new, :create, :edit, :update, :destroy ]
 
     # 戦闘中の状態をスナップショットでまとめて保存する（#159）
     resource :combat_state, only: [ :update ]
-
-    member do
-      patch :advance_round
-      patch :retreat_round
-      patch :reset_round
-    end
   end
 
   # 静的ページ

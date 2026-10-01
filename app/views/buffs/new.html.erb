@@ -1,1 +1,8 @@
-<%= render "buffs/frame", character: @character, buff_presets: @buff_presets, buff: @buff, preset_error: @preset_error %>
+<div class="max-w-3xl mx-auto mt-8 px-4">
+  <h1 class="text-2xl font-bold mb-6">バフを追加</h1>
+
+  <%= render "buffs/form", character: @character, buff_presets: @buff_presets, preset_error: @preset_error %>
+
+  <h2 class="text-lg font-semibold mt-6 mb-2">手動で登録する</h2>
+  <%= render "buffs/manual_form", character: @character, buff: @buff %>
+</div>
