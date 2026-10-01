@@ -10,8 +10,10 @@ Rails.application.routes.draw do
     resources :weapons, only: [ :new, :create, :edit, :update, :destroy ]
     resources :buffs, only: [ :new, :create, :edit, :update, :destroy ]
 
-    # 戦闘中の状態をスナップショットでまとめて保存する（#159）
-    resource :combat_state, only: [ :update ]
+    # 戦闘中の状態をスナップショットでまとめて保存する（#159）。
+    # POSTも受けるのは、離脱時のフラッシュに使う navigator.sendBeacon が
+    # 常にPOSTで送るため。PATCH/PUTだけだとフラッシュが毎回404になる
+    match "combat_state", to: "combat_states#update", via: [ :patch, :put, :post ], as: :combat_state
   end
 
   # 静的ページ

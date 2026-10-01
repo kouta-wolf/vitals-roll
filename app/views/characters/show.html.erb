@@ -1,3 +1,9 @@
+<%# Turboのキャッシュから復元されると data-combat-state が古いDB状態のまま復活し、
+    次の操作で保存済みの値を上書きしてしまうため、このページはキャッシュさせない %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
+
 <main>
   <section class="flex justify-between items-center border-b border-gray-300 p-4">
     <div>
