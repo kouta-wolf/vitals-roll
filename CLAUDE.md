@@ -65,10 +65,14 @@ Rails 8.1 / Ruby 3.4 / PostgreSQL 17 / Node 22 / Devise（+ devise-i18n, rails-i
 
 フロントエンドは Hotwire（Turbo + Stimulus）と **React 19 + TypeScript** が併存する。バンドラは esbuild（設定は `esbuild.config.mjs`）、CSSは TailwindCSS 4。Vite は使っていない（`vite` は Vitest のピア依存として入っているだけ）。
 
-- `app/javascript/react/` — Reactコンポーネントとマウント処理
-- `app/javascript/domain/` — Reactに依存しない純粋なSW2.5ロジック（型と判定式）
+- `app/javascript/react/` — Reactコンポーネント、マウント処理、保存フック
+- `app/javascript/domain/` — Reactに依存しない純粋なSW2.5ロジック（型・判定式・reducer）
 
-テストは RSpec + FactoryBot + Faker、フロントエンドは Vitest（jsdom）。Capybara・selenium-webdriver はGemfileにあるが `spec/system` は未作成。
+**役割分担**: キャラクター詳細ページの戦闘操作はReact、それ以外（一覧・CRUDフォーム・Devise・静的ページ）はERB + Turbo。詳細は「戦闘操作はReactが持つ」を参照。
+
+テストは RSpec + FactoryBot + Faker、フロントエンドは Vitest（jsdom）+ @testing-library/react。Capybara・selenium-webdriver はGemfileにあるが `spec/system` は未作成。
+
+Vitest は `globals: false` のため **testing-library の自動クリーンアップが働かない**。コンポーネントやフックのテストでは `afterEach` で `cleanup()` を呼ぶこと（忘れるとイベントリスナが前のテストから残る）。
 
 ## コーディング規約（Rails）
 
@@ -100,34 +104,41 @@ Rails 8.1 / Ruby 3.4 / PostgreSQL 17 / Node 22 / Devise（+ devise-i18n, rails-i
 | `buff_presets` | アプリ全体で共有するバフの雛形（`character_id` を持たないマスターデータ） |
 | `buffs` | キャラクターにかかっているバフの実体（`buff_preset_id` は任意、カスタムバフはnull） |
 
-### 判定式の組み立て（`Character`）
+### 戦闘操作はReactが持つ（#160）
 
-**現在、判定式ロジックは Ruby と TypeScript の両方に存在する。** `app/models/character.rb` が画面で使われている実装で、`app/javascript/domain/formula.ts` は #158 で移植したもの（まだ画面から呼んでいない）。#160 でReact側へ切り替え、Ruby側を削除する。
+キャラクター詳細ページの**ラウンド進行・バフのオン/オフ・判定式の表示とコピー・武器の選択はReactが担当する**。サーバ側の責務は初期データを埋め込むことと、状態を保存することだけ。
 
-移植時に揃えた点: Ruby の `Integer#/` は負数を**切り下げる**（`-8 / 6` は `-2`）ため、TS側は `Math.trunc` ではなく `Math.floor` を使う。また `value_kind: ability` のバフは個別ではなく**合計してから**÷6する。
+| 層 | 役割 |
+|---|---|
+| `app/javascript/domain/formula.ts` | 判定式の算出（純粋関数） |
+| `app/javascript/domain/combatState.ts` | 状態と `useReducer` のreducer、保存用スナップショットへの変換 |
+| `app/javascript/react/CombatPanel.tsx` | ルート。reducerと保存フックを束ね、各パネルへPortalで差し込む |
+| `app/javascript/react/useCombatStateSave.ts` | デバウンス保存（2秒 / 最大15秒）と離脱時フラッシュ |
+| `app/helpers/combat_states_helper.rb` | 初期データのシリアライズ |
+| `CombatStatesController` | 保存先。スナップショットを受けて冪等に更新（#159） |
 
-- `hit_formula(weapon)` → `2d6+<冒険者レベル+DEXボーナス+命中補正>+<DEXバフ合計>`
-- `attack_formula(weapon)` → `k<威力>[<クリティカル値>]+<固定値+STR/damageバフ合計><特殊トークン>`
+重要な点:
+
+- **判定式とラウンド操作のロジックはTypeScript側が単一の正。** Ruby側の `Character#hit_formula` / `#advance_round!` 等は #160 で削除した。移植時に Ruby の実挙動と突き合わせており、`value_kind: ability` の換算は**合計してから÷6**、負数は `Math.trunc` ではなく **`Math.floor`**（Rubyの `Integer#/` が切り下げるため）。
+- **描画先はERB側に点在する。** `show.html.erb` の `#round-panel` / `#buff-list-panel` / `#formula-panel` へ `createPortal` で差し込む。単一のreducerで扱うためルートは1つ（`[data-react-root]`）に保つ。
+- **初期データは `data-combat-state` 属性で渡す。** Railsが属性値を自動エスケープするため `html_safe` が不要。
+- **保存は `authenticity_token` をJSONボディに含める。** `sendBeacon` はヘッダを付けられないため。`Blob` の `type` は `application/json` 必須（サーバ側はそれ以外を415で弾く）。
+- **保存に失敗しても楽観的更新はロールバックしない。** 戦闘中にチェックが勝手に戻るのは体験を悪化させるため、「未保存」を表示して再試行する（#136 の決定）。
+- 送るスナップショットは**キーを省略しない**。`remaining_rounds` を落とすとサーバ側で更新されず、無限持続バフと区別できなくなる。
+
+バフと武器の**作成・編集・削除はRailsのページ遷移のまま**。これらはキャラクターシート管理の責務で、戦闘中に頻発しない。Reactが描画するバフ行の「編集」はリンク、「削除」は `_method=delete` + `authenticity_token` を持つフォームとして出力し、Turboが拾う。
+
+### 判定式の仕様
+
+- 命中: `2d6+<冒険者レベル + DEXボーナス + 命中補正>+<DEXバフ合計>`
+- ダメージ: `k<威力>[<クリティカル値>]+<固定値 + STR/damageバフ合計><特殊トークン>`
 
 計算上の重要なルール:
 
-- **`value_kind`**: `fixed` はそのまま加算、`ability`（能力値そのものを上げるバフ）は合計を6で割った商（ボーナス換算）を加算する。
-- **`special_type`**: 通常の `bonus_value` 加算で表現できない特殊バフ。判定式の末尾へトークンをポン付けする（`critical_ray` → `$+x`、`kubikari` → `r5`、`dice_fix` → `$x`）。integerではなくstring enumで保存しているのは、後から並べ替えてもズレず管理人がDBを直読みして意味が分かるようにするため。
+- **`value_kind`**: `fixed` はそのまま加算、`ability`（能力値そのものを上げるバフ）は**合計してから**6で割った商を加算する。個別に割ると `+4` と `+4` が `0+0` になる。
+- **`special_type`**: 通常の `bonus_value` 加算で表現できない特殊バフ。判定式の末尾へトークンをポン付けする（`critical_ray` → `$+x`、`kubikari` → `r5`）。`dice_fix` は種別として存在するが判定式へは反映していない。integerではなくstring enumで保存しているのは、後から並べ替えてもズレず管理人がDBを直読みして意味が分かるようにするため。
 - **`active`**: `false` のバフは判定式から除外される。**新規登録・更新の直後は必ず `active: false`**（`BuffPreset#build_buff_for` / `BuffsController#create_buff_manual` / `#resynced_attrs`）。ユーザーが明示的にトグルするまで判定式が黙って変わらないようにするための仕様。
-- **ラウンド進行**: `Character#advance_round!` / `#retreat_round!` / `#reset_round!` が `buffs.remaining_rounds` を増減し、0になると `active: false` に落ちる。`remaining_rounds` が nil のバフは無限持続として増減対象外。
-
-### バフのプリロード規約（壊しやすい箇所）
-
-判定式を描画する経路では、アクション前に `Character#preload_buffs_with_preset!` を必ず呼ぶ（`CharactersController#show/advance_round/retreat_round/reset_round`、`BuffsController#toggle` の `before_action`）。理由:
-
-- `Character` 内のバフ集計（`buff_total_for` / `special_buff_for` / `active_timed_buffs`）は **すべてロード済み `buffs` 配列に対するメモリ内走査**。`where` で取り直すと別インスタンスになり、更新がassociationキャッシュへ反映されず古い値で判定式が組まれる。
-- プリロードを忘れるとN+1が復活する（`buff_preset` 参照でバフ件数分のクエリ）。
-- `set_character` で取得済みのインスタンスには `includes` が効かないため `ActiveRecord::Associations::Preloader` を使っている。
-- `has_many :buffs` の `inverse_of: :character` により `@character.buffs.find(id)` がSQLを投げずプリロード済み配列と同一インスタンスを返す。`BuffsController#toggle` はこれに依存している。
-
-### Turbo Streams
-
-ラウンド進行とバフのトグルは Turbo Stream で部分更新する（`format.turbo_stream` + `format.html` のフォールバック）。更新対象は `dom_id(character, :round)` / `dom_id(character, :buffs_list)` / `dom_id(character, :formula)` / `dom_id(buff)` の4つ。判定式パーシャルは `turbo_frame_tag` で囲まれ、コピーは Stimulus の `clipboard_controller.js` が担当する。
+- **ラウンド進行**: `remaining_rounds` を増減し、0になると `active: false` に落ちる。`remaining_rounds` が nil のバフは無限持続として増減対象外。`reset_round` は持続ラウンドを持つバフだけを初期値へ戻す。
 
 ### 認証
 
