@@ -8,10 +8,8 @@ image: myapp
 servers:
   web:
     - 192.168.0.1
-  # job:
-  #   hosts:
-  #     - 192.168.0.1
-  #   cmd: bin/jobs
+  # ジョブ専用サーバーは使わない。ジョブは Active Job の :async アダプタで
+  # Webプロセス内で実行する（#170 / #180）。
 
 # Enable SSL auto certification via Let's Encrypt and allow for multiple apps on a single web server.
 # If used with Cloudflare, set encryption mode in SSL/TLS setting to "Full" to enable CF-to-app encryption.
@@ -41,14 +39,7 @@ env:
   secret:
     - RAILS_MASTER_KEY
   clear:
-    # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
-    # When you start using multiple servers, you should split out job processing to a dedicated machine.
-    #
-    # 本番では solid_queue を使わない方針にしたため無効化している(#170)。
-    # 有効にすると config/puma.rb の plugin :solid_queue が起動し、存在しない
-    # solid_queue_* テーブルを叩いて落ちる。再度使う場合は #170 の判断
-    # （Neon無料枠の月100 CU-hoursをポーリングで使い切る問題）から見直すこと。
-    # SOLID_QUEUE_IN_PUMA: true
+    # ジョブは Active Job の :async アダプタで処理する。solid_queue は使っていない(#170 / #180)。
 
     # Set number of processes dedicated to Solid Queue (default: 1)
     # JOB_CONCURRENCY: 3

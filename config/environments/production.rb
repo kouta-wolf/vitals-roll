@@ -51,8 +51,9 @@ Rails.application.configure do
   # 本番DBは Neon の無料プラン（月100 CU-hours ≒ 0.25CUで約400時間）。1か月は約730時間
   # あるため、DBをポーリングし続ける構成にするとcomputeがスリープせず16〜17日で枠を
   # 使い切る。solid_queue は0.1〜1秒間隔、solid_cable は0.1秒間隔でポーリングするため
-  # 本番では採用しない。solid_cache はポーリングしないが、キャッシュの読み書きのたびに
+  # 採用しない。solid_cache はポーリングしないが、キャッシュの読み書きのたびに
   # Neonのcomputeを消費するため同様に避ける。
+  # この判断に伴い、3つのgem自体もGemfileから外してある（#180）。
   #
   # config/puma.rb は workers を設定しておらず単一プロセスのため、
   # プロセス内に閉じた :memory_store / :async でも全スレッドから共有できる。

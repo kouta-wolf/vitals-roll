@@ -140,5 +140,5 @@ PR と `main` への push で `.github/workflows/ci.yml` が4ジョブを実行�
 本番は Render（Web）+ Neon（PostgreSQL）で、構成は `render.yaml`、手順は `docs/deploy.md`。
 
 - メール送信は Render が SMTP ポートを遮断するため Resend の HTTP API（`config.action_mailer.delivery_method = :resend`）を使う。
-- **キャッシュ・ジョブ・Action Cable はDBを使わない構成にしている**（`:memory_store` / `:async` / cable も `async`）。Neon無料プランのcompute枠は月100 CU-hours で、solid_queue や solid_cable のポーリングを動かすと16〜17日で使い切るため。詳細と注意点は `docs/deploy.md` 参照。
+- **キャッシュ・ジョブ・Action Cable はDBを使わない構成にしている**（`:memory_store` / `:async` / cable も `async`）。Neon無料プランのcompute枠は月100 CU-hours で、solid_queue や solid_cable のポーリングを動かすと16〜17日で使い切るため。この判断に伴い3つのgemもGemfileから外してある。詳細と注意点は `docs/deploy.md` 参照。
 - Render のスピンダウン対策として、Google Apps Script が10分おきにトップページを叩いている。DBに触らないパスなので Neon は寝たままで、これが意図した状態。
