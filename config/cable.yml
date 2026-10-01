@@ -8,9 +8,10 @@ development:
 test:
   adapter: test
 
+# Action Cable はDBを使うアダプタを採用していない（#170 / #180）。
 # solid_cable は購読が発生すると polling_interval 間隔でDBをポーリングし続け、
-# Neon無料プランのcompute枠を使い切ってしまうため本番では使わない（#170）。
+# Neon無料プランのcompute枠を使い切ってしまうため。gem自体もGemfileから外した。
 # async は同一プロセス内でのみ動作するが、config/puma.rb は workers を設定しておらず
-# 単一プロセスのため問題にならない。
+# 単一プロセスのため問題にならない。使う場面が来たら #181 で再検討する。
 production:
   adapter: async
