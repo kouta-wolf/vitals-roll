@@ -174,6 +174,85 @@ RSpec.describe "Characters", type: :request do
         expect(response.body).to include("精神力（MND）: 12")
         expect(response.body).to include("防護点: 4")
       end
+
+      # ラウンド管理・バフ一覧・判定式はReactが描画する（#160）。
+      # サーバ側の責務は「Reactが起動できる初期データを埋め込む」ことだけ
+      context "Reactの初期データ" do
+        let!(:weapon) { create(:weapon, character: user_character, name: "テストソード") }
+        let!(:buff) { create(:buff, character: user_character, name: "自作バフ", active: true, remaining_rounds: 2) }
+
+        def combat_state
+          get character_path(user_character)
+          node = Nokogiri::HTML(response.body).at_css("[data-react-root]")
+          JSON.parse(node["data-combat-state"])
+        end
+
+        it "Reactのマウント先と各パネルの描画先が存在する" do
+          get character_path(user_character)
+          html = Nokogiri::HTML(response.body)
+
+          expect(html.at_css("[data-react-root]")).to be_present
+          expect(html.at_css("#round-panel")).to be_present
+          expect(html.at_css("#buff-list-panel")).to be_present
+          expect(html.at_css("#formula-panel")).to be_present
+        end
+
+        it "キャラクターのステータスと現在ラウンドを含む" do
+          data = combat_state
+
+          expect(data["character"]).to include("mainClassLevel" => 3, "dexterity" => 12, "currentRounds" => 1)
+        end
+
+        it "武器を含む" do
+          expect(combat_state["weapons"]).to contain_exactly(
+            hash_including("id" => weapon.id, "name" => "テストソード", "power" => 25, "critical" => 10)
+          )
+        end
+
+        it "バフを含む" do
+          expect(combat_state["buffs"]).to contain_exactly(
+            hash_including("id" => buff.id, "name" => "自作バフ", "active" => true, "remainingRounds" => 2)
+          )
+        end
+
+        it "プリセット由来バフはspecialTypeまで含む" do
+          preset = create(:buff_preset, :special, name: "クリティカルレイ", bonus_value: 1)
+          create(:buff, :from_preset, character: user_character, buff_preset: preset, target_status: nil)
+
+          preset_data = combat_state["buffs"].find { |b| b["buffPreset"].present? }
+          expect(preset_data["buffPreset"]).to include("name" => "クリティカルレイ", "specialType" => "critical_ray")
+        end
+
+        it "保存先URLとCSRFトークンを含む" do
+          data = combat_state
+
+          expect(data["saveUrl"]).to eq(character_combat_state_path(user_character))
+          expect(data["csrfToken"]).to be_present
+        end
+
+        it "バフCRUDのパスを含む" do
+          expect(combat_state["buffPathPrefix"]).to eq(character_buffs_path(user_character))
+        end
+
+        # バフ件数が増えてもbuff_presetのクエリが増えないこと
+        it "バフのbuff_presetを引く際にN+1が発生しない" do
+          3.times do
+            preset = create(:buff_preset)
+            create(:buff, :from_preset, character: user_character, buff_preset: preset)
+          end
+
+          queries = []
+          subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*, payload|
+            queries << payload[:sql] if payload[:sql].include?("buff_presets")
+          end
+
+          get character_path(user_character)
+          ActiveSupport::Notifications.unsubscribe(subscriber)
+
+          # プリセット一覧用の1本と、includesでまとめて引く1本のみ
+          expect(queries.size).to be <= 2
+        end
+      end
     end
   end
 
@@ -357,281 +436,6 @@ RSpec.describe "Characters", type: :request do
           expect { delete character_path(other_character) }.not_to change(Character, :count)
           expect(response).to have_http_status(404)
         end
-      end
-    end
-  end
-
-  describe "PATCH /characters/:id/advance_round" do
-    let(:user_character) { create(:character, user: user, current_rounds: 2) }
-
-    context "未ログインの場合" do
-      it "ログインページにリダイレクトされる" do
-        patch advance_round_character_path(user_character)
-        expect(response).to redirect_to(new_user_session_path)
-      end
-    end
-
-    context "ログイン済みの場合" do
-      before { sign_in user }
-
-      it "current_roundsが1増える" do
-        expect {
-          patch advance_round_character_path(user_character)
-        }.to change { user_character.reload.current_rounds }.from(2).to(3)
-      end
-
-      it "activeなバフのremaining_roundsが1減る" do
-        buff = create(:buff, character: user_character, active: true, duration_rounds: 3, remaining_rounds: 3)
-        patch advance_round_character_path(user_character)
-        expect(buff.reload.remaining_rounds).to eq(2)
-      end
-
-      it "remaining_roundsが0になったバフはactive: falseになる" do
-        buff = create(:buff, character: user_character, active: true, duration_rounds: 3, remaining_rounds: 1)
-        patch advance_round_character_path(user_character)
-        expect(buff.reload.active).to be false
-      end
-
-      it "turbo_stream形式でリクエストすると200が返る" do
-        patch advance_round_character_path(user_character), as: :turbo_stream
-        expect(response).to have_http_status(200)
-        expect(response.media_type).to eq(Mime[:turbo_stream])
-      end
-
-      it "turbo_stream形式でリクエストするとバフ一覧の残りラウンドが更新される" do
-        create(:buff, character: user_character, active: true, name: "テストバフ", duration_rounds: 3, remaining_rounds: 3)
-        patch advance_round_character_path(user_character), as: :turbo_stream
-        expect(response.body).to include("残り2R")
-      end
-
-      it "バフが失効して判定式が変わる場合、turbo_stream内の判定式表示も更新される" do
-        weapon = create(:weapon, character: user_character)
-        create(:buff, character: user_character, active: true, target_status: "strength", bonus_value: 2, duration_rounds: 1, remaining_rounds: 1)
-        patch advance_round_character_path(user_character), as: :turbo_stream
-        expect(response.body).to include(user_character.attack_formula(weapon))
-      end
-    end
-
-    context "認可チェック" do
-      before { sign_in user }
-
-      it "自分の別キャラクターのcurrent_roundsは変わらない" do
-        another_character = create(:character, user: user, current_rounds: 2)
-        expect {
-          patch advance_round_character_path(user_character)
-        }.not_to change { another_character.reload.current_rounds }
-      end
-
-      it "他ユーザーのキャラクターの場合404になりcurrent_roundsが変わらない" do
-        other_user = create(:user)
-        other_character = create(:character, user: other_user, current_rounds: 2)
-        expect {
-          patch advance_round_character_path(other_character)
-        }.not_to change { other_character.reload.current_rounds }
-        expect(response).to have_http_status(:not_found)
-      end
-    end
-  end
-
-  describe "PATCH /characters/:id/retreat_round" do
-    let(:user_character) { create(:character, user: user, current_rounds: 2) }
-
-    context "未ログインの場合" do
-      it "ログインページにリダイレクトされる" do
-        patch retreat_round_character_path(user_character)
-        expect(response).to redirect_to(new_user_session_path)
-      end
-    end
-
-    context "ログイン済みの場合" do
-      before { sign_in user }
-
-      it "current_roundsが1減る" do
-        expect {
-          patch retreat_round_character_path(user_character)
-        }.to change { user_character.reload.current_rounds }.from(2).to(1)
-      end
-
-      it "current_roundsが0のときは0未満にならない" do
-        zero_round_character = create(:character, user: user, current_rounds: 0)
-        expect {
-          patch retreat_round_character_path(zero_round_character)
-        }.not_to change { zero_round_character.reload.current_rounds }
-      end
-
-      it "activeなバフのremaining_roundsが1増える" do
-        buff = create(:buff, character: user_character, active: true, duration_rounds: 3, remaining_rounds: 1)
-        patch retreat_round_character_path(user_character)
-        expect(buff.reload.remaining_rounds).to eq(2)
-      end
-
-      it "remaining_roundsがduration_roundsに達していればそれ以上増えない" do
-        buff = create(:buff, character: user_character, active: true, duration_rounds: 3, remaining_rounds: 3)
-        patch retreat_round_character_path(user_character)
-        expect(buff.reload.remaining_rounds).to eq(3)
-      end
-
-      it "turbo_stream形式でリクエストすると200が返る" do
-        patch retreat_round_character_path(user_character), as: :turbo_stream
-        expect(response).to have_http_status(200)
-        expect(response.media_type).to eq(Mime[:turbo_stream])
-      end
-
-      it "turbo_stream形式でリクエストするとバフ一覧の残りラウンドが更新される" do
-        create(:buff, character: user_character, active: true, name: "テストバフ", duration_rounds: 3, remaining_rounds: 1)
-        patch retreat_round_character_path(user_character), as: :turbo_stream
-        expect(response.body).to include("残り2R")
-      end
-
-      it "turbo_stream形式でリクエストすると判定式表示も再描画される" do
-        weapon = create(:weapon, character: user_character)
-        patch retreat_round_character_path(user_character), as: :turbo_stream
-        expect(response.body).to include(user_character.attack_formula(weapon))
-      end
-    end
-
-    context "認可チェック" do
-      before { sign_in user }
-
-      it "自分の別キャラクターのcurrent_roundsは変わらない" do
-        another_character = create(:character, user: user, current_rounds: 2)
-        expect {
-          patch retreat_round_character_path(user_character)
-        }.not_to change { another_character.reload.current_rounds }
-      end
-
-      it "他ユーザーのキャラクターの場合404になりcurrent_roundsが変わらない" do
-        other_user = create(:user)
-        other_character = create(:character, user: other_user, current_rounds: 2)
-        expect {
-          patch retreat_round_character_path(other_character)
-        }.not_to change { other_character.reload.current_rounds }
-        expect(response).to have_http_status(:not_found)
-      end
-    end
-  end
-
-  describe "PATCH /characters/:id/reset_round" do
-    let(:user_character) { create(:character, user: user, current_rounds: 5) }
-
-    context "未ログインの場合" do
-      it "ログインページにリダイレクトされる" do
-        patch reset_round_character_path(user_character)
-        expect(response).to redirect_to(new_user_session_path)
-      end
-    end
-
-    context "ログイン済みの場合" do
-      before { sign_in user }
-
-      it "current_roundsが0に戻る" do
-        expect {
-          patch reset_round_character_path(user_character)
-        }.to change { user_character.reload.current_rounds }.from(5).to(0)
-      end
-
-      it "持続バフのremaining_roundsがduration_roundsに戻る" do
-        buff = create(:buff, character: user_character, active: true, duration_rounds: 3, remaining_rounds: 1)
-        patch reset_round_character_path(user_character)
-        expect(buff.reload.remaining_rounds).to eq(3)
-      end
-
-      it "持続バフがactive: falseになる" do
-        buff = create(:buff, character: user_character, active: true, duration_rounds: 3, remaining_rounds: 1)
-        patch reset_round_character_path(user_character)
-        expect(buff.reload.active).to be false
-      end
-
-      it "無限バフは変化しない" do
-        buff = create(:buff, character: user_character, active: true, duration_rounds: nil, remaining_rounds: nil)
-        patch reset_round_character_path(user_character)
-        buff.reload
-        expect(buff.active).to be true
-        expect(buff.remaining_rounds).to be_nil
-      end
-
-      it "リセット後詳細ページへリダイレクトされる" do
-        patch reset_round_character_path(user_character)
-        expect(response).to redirect_to(character_path(user_character))
-      end
-
-      it "リセットしたことを明示するメッセージが表示される" do
-        patch reset_round_character_path(user_character)
-        expect(flash[:notice]).to eq("ラウンドをリセットしました")
-      end
-
-      it "バフが失効して判定式が変わる場合、turbo_stream内の判定式表示も更新される" do
-        weapon = create(:weapon, character: user_character)
-        create(:buff, character: user_character, active: true, target_status: "strength", bonus_value: 2, duration_rounds: 3, remaining_rounds: 1)
-        patch reset_round_character_path(user_character), as: :turbo_stream
-        expect(response.body).to include(user_character.attack_formula(weapon))
-      end
-    end
-
-    context "認可チェック" do
-      before { sign_in user }
-
-      it "自分の別キャラクターのcurrent_roundsは変わらない" do
-        another_character = create(:character, user: user, current_rounds: 5)
-        expect {
-          patch reset_round_character_path(user_character)
-        }.not_to change { another_character.reload.current_rounds }
-      end
-
-      it "自分の別キャラクターのバフは変わらない" do
-        another_character = create(:character, user: user, current_rounds: 5)
-        another_buff = create(:buff, character: another_character, active: true, duration_rounds: 3, remaining_rounds: 1)
-        patch reset_round_character_path(user_character)
-        expect(another_buff.reload.remaining_rounds).to eq(1)
-      end
-
-      it "他ユーザーのキャラクターの場合404になりcurrent_roundsが変わらない" do
-        other_user = create(:user)
-        other_character = create(:character, user: other_user, current_rounds: 5)
-        expect {
-          patch reset_round_character_path(other_character)
-        }.not_to change { other_character.reload.current_rounds }
-        expect(response).to have_http_status(:not_found)
-      end
-    end
-  end
-
-  describe "GET /characters/:id?weapon_id=" do
-    let(:user_character) { create(:character, user: user, main_class_level: 3, dexterity: 12) }
-    let!(:weapon_a) { create(:weapon, character: user_character, name: "武器A", power: 25, critical: 10, fixed_value: 1, fixed_hit_rate: 0) }
-    let!(:weapon_b) { create(:weapon, character: user_character, name: "武器B", power: 15, critical: 9, fixed_value: 2, fixed_hit_rate: -1) }
-
-    context "ログイン済みの場合" do
-      before { sign_in user }
-
-      it "weapon_id未指定の場合は先頭の武器の判定式が表示される" do
-        get character_path(user_character)
-        expect(response.body).to include("2d6+5+0")
-        expect(response.body).to include("k25[10]+1")
-      end
-
-      it "weapon_idを指定するとその武器の判定式が表示される" do
-        get character_path(user_character), params: { weapon_id: weapon_b.id }
-        expect(response.body).to include("2d6+4+0")
-        expect(response.body).to include("k15[9]+2")
-      end
-
-      it "武器が登録されていない場合はその旨のメッセージが表示される" do
-        no_weapon_character = create(:character, user: user)
-        get character_path(no_weapon_character)
-        expect(response.body).to include("武器が登録されていません")
-      end
-
-      it "命中判定式・ダメージ判定式それぞれにコピーボタンが表示される" do
-        get character_path(user_character)
-        expect(response.body.scan('data-controller="clipboard"').count).to eq(2)
-        expect(response.body.scan(/data-clipboard-target="button"[^>]*>\s*コピー\s*</).count).to eq(2)
-      end
-
-      it "コピー対象のテキストとして判定式が設定される" do
-        get character_path(user_character)
-        expect(response.body).to include('data-clipboard-target="source">2d6+5+0<')
-        expect(response.body).to include('data-clipboard-target="source">k25[10]+1<')
       end
     end
   end
