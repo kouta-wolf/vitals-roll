@@ -17,6 +17,13 @@ ja:
         critical: "クリティカル値"
         fixed_value: "固定値"
         fixed_hit_rate: "命中補正"
+      # 新規作成フォームで同時に登録する武器のエラーメッセージ用(#162)
+      character/weapons:
+        name: "武器名"
+        power: "威力"
+        critical: "クリティカル値"
+        fixed_value: "固定値"
+        fixed_hit_rate: "命中補正"
       buff:
         character: "キャラクター"
         name: "バフ名"
