@@ -121,3 +121,12 @@ jobs:
         run: |
           bin/rails db:create db:migrate
           bundle exec rspec
+
+      # system spec が失敗したときの画面を確認できるようにする(#195)
+      - name: Upload system spec screenshots
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: capybara-screenshots
+          path: tmp/capybara
+          if-no-files-found: ignore
