@@ -1,3 +1,9 @@
+<%# Turboのキャッシュから復元されると data-combat-state が古いDB状態のまま復活し、
+    次の操作で保存済みの値を上書きしてしまうため、このページはキャッシュさせない %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
+
 <main>
   <section class="flex justify-between items-center border-b border-gray-300 p-4">
     <div>
@@ -8,23 +14,28 @@
         class: "inline-flex h-10 items-center rounded-md bg-blue-600 hover:bg-blue-700 px-4 text-white transition active:scale-95 hover:cursor-pointer" %>
   </section>
 
+  <%# Reactのマウント先。描画自体は下の各パネルへPortalで差し込むため、ここには何も表示しない。
+      初期データはdata属性で渡す（Railsが属性値をエスケープするのでhtml_safeが不要） %>
+  <div data-react-root hidden data-combat-state="<%= combat_state_data(@character, @weapons).to_json %>"></div>
+
   <div class="flex gap-4 flex-1 m-4">
     <div class="flex flex-col gap-4 flex-1">
-      <%# Reactのマウント先。#160 でラウンド管理・バフ一覧・判定式をここへ集約し、その際 hidden を外す。
-          親が flex flex-col gap-4 のため、hidden が無いと空のdivでも flex item として
-          gap 1rem 分の余白を作ってしまう %>
-      <div data-react-root hidden></div>
-
       <section class="p-4 border border-gray-300">
         <h2 class="text-2xl">ラウンド管理</h2>
 
-        <%= render "characters/round", character: @character %>
+        <div id="round-panel"></div>
       </section>
 
       <section class="p-4 border border-gray-300">
         <h2 class="text-2xl">有効な効果、補正一覧</h2>
 
-        <%= render "buffs/frame", character: @character, buff_presets: @buff_presets, buff: nil, selected_weapon: @selected_weapon %>
+        <div id="buff-list-panel"></div>
+
+        <%# バフの登録はRails側のまま（#160のスコープ外） %>
+        <%= render "buffs/form", character: @character, buff_presets: @buff_presets, preset_error: nil %>
+
+        <%= link_to "＋ バフを手動登録", new_character_buff_path(@character),
+              class: "text-blue-600 hover:underline text-sm mt-2 inline-block" %>
       </section>
 
       <section class="p-4 border border-gray-300">
@@ -46,7 +57,7 @@
       <section class="p-4 border border-gray-300">
         <h2 class="text-2xl">判定式</h2>
 
-        <%= render "characters/formula", character: @character, weapons: @weapons, selected_weapon: @selected_weapon %>
+        <div id="formula-panel"></div>
       </section>
     </div>
   </div>

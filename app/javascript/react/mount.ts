@@ -1,6 +1,21 @@
 import { createRoot, type Root } from "react-dom/client"
 import { createElement } from "react"
 import { CombatPanel } from "./CombatPanel"
+import type { CombatStateData } from "../domain/combatState"
+
+// 初期データは data 属性で受け取る。script タグへJSONを埋める方式と違い、
+// Railsが属性値を自動でエスケープするため html_safe を使わずに済む
+function readCombatState(element: HTMLElement): CombatStateData | null {
+  const raw = element.dataset.combatState
+  if (raw === undefined || raw === "") return null
+
+  try {
+    return JSON.parse(raw) as CombatStateData
+  } catch (error) {
+    console.error("戦闘状態の初期データを解析できませんでした", error)
+    return null
+  }
+}
 
 const roots = new Map<Element, Root>()
 
@@ -14,9 +29,11 @@ export function mountAll(): number {
   document.querySelectorAll<HTMLElement>("[data-react-root]").forEach((element) => {
     if (roots.has(element)) return
 
+    const data = readCombatState(element)
     const root = createRoot(element)
     roots.set(element, root)
-    root.render(createElement(CombatPanel))
+    // 初期データが無ければマウントだけして何も描画しない
+    root.render(data === null ? null : createElement(CombatPanel, { data }))
     mounted += 1
   })
 

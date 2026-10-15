@@ -1,6 +1,5 @@
 class CharactersController < ApplicationController
-  before_action :set_character, only: [ :show, :edit, :update, :destroy, :advance_round, :retreat_round, :reset_round ]
-  before_action :preload_buffs_with_preset, only: [ :show, :advance_round, :retreat_round, :reset_round ]
+  before_action :set_character, only: [ :show, :edit, :update, :destroy ]
 
   def index
     @characters = current_user.characters.order(updated_at: :desc).page(params[:page]).per(8)
@@ -22,7 +21,6 @@ class CharactersController < ApplicationController
   def show
     @buff_presets = BuffPreset.all
     @weapons = @character.weapons
-    @selected_weapon = @weapons.find_by(id: params[:weapon_id]) || @weapons.first
   end
 
   def edit
@@ -41,36 +39,6 @@ class CharactersController < ApplicationController
     redirect_to characters_path, notice: "キャラクターを削除しました"
   end
 
-  def advance_round
-    @character.advance_round!
-    set_weapons_for_formula
-
-    respond_to do |format|
-      format.turbo_stream
-      format.html { redirect_to @character }
-    end
-  end
-
-  def retreat_round
-    @character.retreat_round!
-    set_weapons_for_formula
-
-    respond_to do |format|
-      format.turbo_stream
-      format.html { redirect_to @character }
-    end
-  end
-
-  def reset_round
-    @character.reset_round!
-    set_weapons_for_formula
-
-    respond_to do |format|
-      format.turbo_stream
-      format.html { redirect_to @character, notice: "ラウンドをリセットしました" }
-    end
-  end
-
   private
 
   def character_params
@@ -79,14 +47,5 @@ class CharactersController < ApplicationController
 
   def set_character
     @character = current_user.characters.find(params[:id])
-  end
-
-  def preload_buffs_with_preset
-    @character.preload_buffs_with_preset!
-  end
-
-  def set_weapons_for_formula
-    @weapons = @character.weapons
-    @selected_weapon = @weapons.find_by(id: params[:weapon_id]) || @weapons.first
   end
 end

@@ -43,6 +43,16 @@ RSpec.describe "CombatStates", type: :request do
         expect(response.body).to be_empty
       end
 
+      # navigator.sendBeacon は必ずPOSTで送る。PATCH/PUTしか受けていないと
+      # 離脱時のフラッシュが毎回404になり、しかもsendBeaconはキュー投入時に
+      # trueを返すためクライアント側で失敗を検知できない（#160）
+      it "POSTでも受け付ける（sendBeaconからの離脱時フラッシュ）" do
+        post character_combat_state_path(character), params: snapshot, as: :json
+
+        expect(response).to have_http_status(204)
+        expect(character.reload.current_rounds).to eq(5)
+      end
+
       it "current_roundsと複数バフをまとめて更新する" do
         patch_snapshot(snapshot)
 

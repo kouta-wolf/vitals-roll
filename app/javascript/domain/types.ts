@@ -82,13 +82,11 @@ function presence(value: string | null): string | null {
   return value !== null && value.trim() !== "" ? value : null
 }
 
-// Rails側の Buff#display_name（name.presence || buff_preset&.name）と揃える。
-// ?? だけだと name が空文字のときにプリセット名へ落ちず、Railsと表示が食い違う。
+// 表示名は name を優先し、無ければプリセット名へ落ちる。
+// ?? ではなく presence 相当の判定を使うのは、name が空文字のときもプリセット名を
+// 使うため（#158 で Rails の Buff#display_name から移植し、Ruby側は #160 で削除した）。
 //
-// 戻り値だけは意図的に揃えていない。Railsは両方無いとき nil を返すが、
-// ERBでは nil も空文字として描画されるため表示は同じで、TS側は string で
-// 扱えたほうが呼び出し側が楽なため "" を返す。なお name もプリセットも無い
-// 状態は Buff の presence バリデーションにより保存できない。
+// name もプリセットも無い状態は Buff の presence バリデーションにより保存できない。
 export function buffDisplayName(buff: Buff): string {
   return presence(buff.name) ?? buff.buffPreset?.name ?? ""
 }

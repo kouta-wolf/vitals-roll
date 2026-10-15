@@ -1,3 +1,5 @@
-<%= turbo_frame_tag dom_id(@buff) do %>
+<div class="max-w-3xl mx-auto mt-8 px-4">
+  <h1 class="text-2xl font-bold mb-6">バフを編集</h1>
+
   <%= render "buffs/manual_form", character: @character, buff: @buff %>
-<% end %>
+</div>
