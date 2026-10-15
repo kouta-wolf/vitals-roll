@@ -6,6 +6,8 @@ Rails.application.routes.draw do
   devise_for :users
   root "top#index"
 
+  # ゆとシートⅡのJSONから新規作成フォームへ値を入れる(#194)
+  resource :character_import, only: :create
   resources :characters do
     resources :weapons, only: [ :new, :create, :edit, :update, :destroy ]
     resources :buffs, only: [ :new, :create, :edit, :update, :destroy ]
