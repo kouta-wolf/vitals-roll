@@ -102,6 +102,50 @@
     </div>
   </section>
 
+  <%# --- 武器（新規作成時のみ。編集画面では別セクションで管理する） --- %>
+  <% unless @character.persisted? %>
+    <section class="bg-white border rounded-lg p-4 space-y-4">
+      <h2 class="font-semibold text-lg border-b pb-2">武器</h2>
+      <p class="text-xs text-gray-500">任意入力です。武器名を入れると判定式がすぐ使えます（2本目以降は編集画面から追加できます）</p>
+
+      <%= form.fields_for :weapons do |weapon_form| %>
+        <div>
+          <%= weapon_form.label :name, "武器名", class: "block text-sm font-medium mb-1" %>
+          <%= weapon_form.text_field :name,
+                placeholder: "例: ロングソード",
+                class: "w-full border rounded px-3 py-2 text-sm" %>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <%= weapon_form.label :power, "威力", class: "block text-sm font-medium mb-1" %>
+            <%= weapon_form.number_field :power,
+                  min: 0, max: 500,
+                  class: "w-full border rounded px-3 py-2 text-sm" %>
+          </div>
+          <div>
+            <%= weapon_form.label :critical, "クリティカル値", class: "block text-sm font-medium mb-1" %>
+            <%= weapon_form.number_field :critical,
+                  min: 3, max: 13,
+                  class: "w-full border rounded px-3 py-2 text-sm" %>
+          </div>
+          <div>
+            <%= weapon_form.label :fixed_value, "固定値", class: "block text-sm font-medium mb-1" %>
+            <%= weapon_form.number_field :fixed_value,
+                  min: -10, max: 100,
+                  class: "w-full border rounded px-3 py-2 text-sm" %>
+          </div>
+          <div>
+            <%= weapon_form.label :fixed_hit_rate, "命中補正", class: "block text-sm font-medium mb-1" %>
+            <%= weapon_form.number_field :fixed_hit_rate,
+                  min: -10, max: 10,
+                  class: "w-full border rounded px-3 py-2 text-sm" %>
+          </div>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
+
   <div class="flex gap-3">
     <%= form.submit @character.persisted? ? "更新する" : "作成する",
           class: "bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded cursor-pointer" %>

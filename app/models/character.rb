@@ -3,6 +3,11 @@ class Character < ApplicationRecord
   has_many :weapons, dependent: :destroy
   has_many :buffs, dependent: :destroy
 
+  # 新規作成フォームで武器を同時に登録する(#162)。武器は任意入力。
+  # weaponsのカラムにはDBのデフォルト値があり、フォームの数値欄は空にならないため
+  # :all_blank では未入力を判定できない。武器名が空で数値もデフォルトのままなら未入力とみなす。
+  accepts_nested_attributes_for :weapons, reject_if: :untouched_weapon?
+
   validates :name, presence: true
   validates :dexterity, :agility, :strength, :vitality, :intelligence, :spirit,
             presence: true, numericality: { only_integer: true, in: 1..999 }
@@ -17,4 +22,12 @@ class Character < ApplicationRecord
   validates :main_class_level, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
   validates :defense, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :current_rounds, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+
+  private
+
+  def untouched_weapon?(attributes)
+    defaults = Weapon.column_defaults.slice("power", "critical", "fixed_value", "fixed_hit_rate")
+    attributes["name"].blank? &&
+      defaults.all? { |column, default| attributes[column].blank? || attributes[column].to_s == default.to_s }
+  end
 end
