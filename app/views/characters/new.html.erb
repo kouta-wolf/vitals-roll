@@ -1,6 +1,8 @@
 <div class="max-w-lg mx-auto mt-8 px-4">
   <h1 class="text-2xl font-bold mb-6">キャラクター新規作成</h1>
 
-  <%= render "form" %>
+  <%= render "characters/ytsheet_import", import: @import || YtsheetImport.new %>
+
+  <%= render "characters/form" %>
 
 </div>

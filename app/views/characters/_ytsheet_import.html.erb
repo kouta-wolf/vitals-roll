@@ -1,0 +1,31 @@
+<%# ゆとシートⅡのJSONから新規作成フォームへ値を入れる(#194)。保存はしない %>
+<details class="bg-white border rounded-lg p-4 mb-6" <%= "open" if import.errors.any? %>>
+  <summary class="font-semibold cursor-pointer">ゆとシートⅡから読み込む</summary>
+
+  <div class="mt-4 space-y-3">
+    <ol class="list-decimal list-inside text-xs text-gray-600 space-y-1">
+      <li>ゆとシートⅡでキャラクターシートを開き、URLの末尾に <code class="bg-gray-100 px-1">&amp;mode=json</code> を付けて開き直す</li>
+      <li>表示された文字をすべてコピーして、下の欄に貼り付ける</li>
+      <li>読み込んだ内容を確認してから「作成する」を押す</li>
+    </ol>
+
+    <% if import.errors.any? %>
+      <ul class="bg-red-50 border border-red-300 rounded p-3 text-sm text-red-600">
+        <% import.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <%# Turboは成功したフォーム送信にリダイレクトを求め、200で返したHTMLを描画しない。
+        このフォームは保存せずに読み込み結果を表示するだけなので、通常のフォーム送信にする %>
+    <%= form_with model: import, url: character_import_path, data: { turbo: false }, class: "space-y-3" do |form| %>
+      <%= form.label :json, "ゆとシートⅡのJSON", class: "sr-only" %>
+      <%= form.text_area :json, rows: 4,
+            placeholder: '{"characterName":"...", ...}',
+            class: "w-full border rounded px-3 py-2 text-xs font-mono" %>
+      <%= form.submit "読み込む",
+            class: "bg-gray-700 hover:bg-gray-800 text-white text-sm px-4 py-2 rounded cursor-pointer" %>
+    <% end %>
+  </div>
+</details>
