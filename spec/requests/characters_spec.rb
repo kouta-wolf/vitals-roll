@@ -71,6 +71,12 @@ RSpec.describe "Characters", type: :request do
         expect(html.at_css("#character_main_class_level")["value"]).to eq("1")
         expect(html.at_css("#character_defense")["value"]).to eq("0")
       end
+
+      it "武器の入力欄が1組表示される" do
+        get new_character_path
+        html = Nokogiri::HTML(response.body)
+        expect(html.css("input[name^='character[weapons_attributes]'][name$='[name]']").size).to eq(1)
+      end
     end
   end
 
@@ -115,7 +121,92 @@ RSpec.describe "Characters", type: :request do
         end
       end
 
+      context "武器も入力した場合" do
+        let(:params_with_weapon) do
+          valid_params.deep_merge(
+            character: {
+              weapons_attributes: {
+                "0" => { name: "ロングソード", power: 30, critical: 10, fixed_value: 2, fixed_hit_rate: 1 }
+              }
+            }
+          )
+        end
+
+        it "キャラクターと武器が同時に作成される" do
+          expect { post characters_path, params: params_with_weapon }
+            .to change(user.characters, :count).by(1)
+            .and change(Weapon, :count).by(1)
+
+          weapon = user.characters.last.weapons.sole
+          expect(weapon).to have_attributes(name: "ロングソード", power: 30, critical: 10, fixed_value: 2, fixed_hit_rate: 1)
+        end
+
+        it "作成したキャラクターの詳細ページにリダイレクトされる" do
+          post characters_path, params: params_with_weapon
+          expect(response).to redirect_to(character_path(user.characters.last))
+        end
+      end
+
+      context "武器欄が未入力（デフォルト値のまま）の場合" do
+        let(:params_with_untouched_weapon) do
+          valid_params.deep_merge(
+            character: {
+              weapons_attributes: {
+                "0" => { name: "", power: "0", critical: "10", fixed_value: "0", fixed_hit_rate: "0" }
+              }
+            }
+          )
+        end
+
+        it "キャラクターのみ作成され、武器は作成されない" do
+          expect { post characters_path, params: params_with_untouched_weapon }
+            .to change(user.characters, :count).by(1)
+            .and change(Weapon, :count).by(0)
+        end
+
+        it "一覧ページにリダイレクトされる" do
+          post characters_path, params: params_with_untouched_weapon
+          expect(response).to redirect_to(characters_path)
+        end
+      end
+
+      context "武器だけが無効な場合" do
+        let(:params_with_invalid_weapon) do
+          valid_params.deep_merge(
+            character: {
+              weapons_attributes: {
+                "0" => { name: "", power: "30", critical: "10", fixed_value: "0", fixed_hit_rate: "0" }
+              }
+            }
+          )
+        end
+
+        it "キャラクターも武器も作成されない" do
+          expect { post characters_path, params: params_with_invalid_weapon }
+            .to change(Character, :count).by(0)
+            .and change(Weapon, :count).by(0)
+        end
+
+        it "422を返し、武器のエラーメッセージを表示する" do
+          post characters_path, params: params_with_invalid_weapon
+          expect(response).to have_http_status(422)
+          expect(response.body).to include("武器名を入力してください")
+        end
+
+        it "入力した武器の値がフォームに残る" do
+          post characters_path, params: params_with_invalid_weapon
+          html = Nokogiri::HTML(response.body)
+          expect(html.at_css("input[name='character[weapons_attributes][0][power]']")["value"]).to eq("30")
+        end
+      end
+
       context "無効なパラメータの場合" do
+        it "武器の入力欄を再表示する" do
+          post characters_path, params: invalid_params
+          html = Nokogiri::HTML(response.body)
+          expect(html.css("input[name^='character[weapons_attributes]'][name$='[name]']").size).to eq(1)
+        end
+
         it "キャラクター数が変わらない" do
           expect {
             post characters_path, params: invalid_params
@@ -278,6 +369,11 @@ RSpec.describe "Characters", type: :request do
         get edit_character_path(user_character)
         expect(response.body).to include("テスター・ドラゴン")
         expect(response.body).to include("テストドレイク")
+      end
+
+      it "新規作成用の武器入力欄は表示されない" do
+        get edit_character_path(user_character)
+        expect(response.body).not_to include("character[weapons_attributes]")
       end
 
       # フォームに value: をハードコードすると保存済みの値が初期値で上書きされるため、
