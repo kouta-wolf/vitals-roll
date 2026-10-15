@@ -35,6 +35,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+  # system spec 用のブラウザ(#195)。普段の docker compose up では起動しない。
+  #   docker compose --profile system up -d chrome
+  chrome:
+    image: selenium/standalone-chromium:latest
+    profiles: ["system"]
+    shm_size: 2gb
 volumes:
   bundle_data:
   postgresql_data:
