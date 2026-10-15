@@ -5,8 +5,21 @@ updates:
   schedule:
     interval: weekly
   open-pull-requests-limit: 10
+  # 公開直後のバージョンには乗らない。乗っ取られたパッケージの悪意あるリリースは
+  # 数日以内に発覚・取り下げられることが多いため。セキュリティアップデートには適用されない(#196)
+  cooldown:
+    default-days: 3
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10
+  cooldown:
+    default-days: 3
 - package-ecosystem: github-actions
   directory: "/"
   schedule:
     interval: weekly
   open-pull-requests-limit: 10
+  cooldown:
+    default-days: 3
